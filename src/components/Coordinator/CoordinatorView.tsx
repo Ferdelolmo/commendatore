@@ -47,7 +47,7 @@ export function CoordinatorView() {
   // Wait, I need to destructure 'tasks' from useTasks first.
 
 
-  const tasks = (activeTab === 'timeline' || activeTab === 'team') ? allTasks : getTasksByDay(activeTab);
+  const tasks = (activeTab === 'timeline' || activeTab === 'team' || activeTab === 'calendar') ? allTasks : getTasksByDay(activeTab);
 
   return (
     <div className="min-h-screen bg-background">
