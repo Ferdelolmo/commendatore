@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Shield, Users, AlertCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export function LoginScreen() {
   const { login, loginAsGuest } = useAuth();
@@ -26,7 +27,27 @@ export function LoginScreen() {
         return;
       }
     } else {
-      loginAsGuest();
+      // Coordinator Login - Secure RPC Check
+      setIsLoading(true);
+      try {
+        const { data, error: rpcError } = await supabase.rpc('verify_coordinator_code', {
+          code_attempt: password
+        });
+
+        if (rpcError) {
+          console.error('RPC Error:', rpcError);
+          setError('Error verifying code. Please try again.');
+        } else if (data === true) {
+          loginAsGuest();
+        } else {
+          setError('Incorrect access code. Please try again.');
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        setError('An unexpected error occurred.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -108,7 +129,7 @@ export function LoginScreen() {
                   <li>• Update task status in real-time</li>
                   <li>• Track progress throughout the day</li>
                 </ul>
-                <p className="text-xs text-success font-medium">No password required</p>
+                <p className="text-xs text-primary font-medium">Access code required</p>
               </CardContent>
             </Card>
 
@@ -146,7 +167,7 @@ export function LoginScreen() {
             <div className="mt-8 max-w-md mx-auto animate-fade-in">
               <Card>
                 <CardContent className="pt-6">
-                  {selectedRole === 'admin' && (
+                  {selectedRole === 'admin' ? (
                     <div className="space-y-4 mb-4">
                       <div>
                         <Label htmlFor="email">Email</Label>
@@ -184,13 +205,43 @@ export function LoginScreen() {
                         </div>
                       )}
                     </div>
+                  ) : (
+                    <div className="space-y-4 mb-4">
+                      <div>
+                        <Label htmlFor="secretCode">Secret Access Code</Label>
+                        <Input
+                          id="secretCode"
+                          type="password"
+                          placeholder="Enter current year to access"
+                          value={password}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            setError('');
+                          }}
+                          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                          className="mt-2"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1.5">
+                          Enter the code shared by the couple (Hint: 2026)
+                        </p>
+                      </div>
+                      {error && (
+                        <div className="flex items-center gap-2 mt-2 text-destructive text-sm">
+                          <AlertCircle className="h-4 w-4" />
+                          {error}
+                        </div>
+                      )}
+                    </div>
                   )}
                   <Button
                     onClick={handleLogin}
                     className="w-full"
-                    disabled={selectedRole === 'admin' && (!password || !email || isLoading)}
+                    disabled={
+                      (selectedRole === 'admin' && (!password || !email || isLoading)) ||
+                      (selectedRole === 'coordinator' && !password)
+                    }
                   >
-                    {isLoading ? 'Loading...' : (selectedRole === 'admin' ? 'Access Admin Panel' : 'Continue as Coordinator')}
+                    {isLoading ? 'Loading...' : (selectedRole === 'admin' ? 'Access Admin Panel' : 'Unlock Coordinator View')}
                   </Button>
                 </CardContent>
               </Card>

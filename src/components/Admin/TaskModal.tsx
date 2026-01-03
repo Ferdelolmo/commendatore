@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
+import { useTeam } from '@/hooks/useTeam';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -55,30 +56,6 @@ const eventNames = [
   'Preparation',
 ];
 
-const assignees = [
-  'Fernando',
-  'Chiara',
-  'Wedding Planner',
-  'Ruben',
-  'Alessia',
-  'Rubio',
-  'José Ángel',
-  'Adolfo',
-  'Elisa',
-  'Adrian',
-  'Javier Maitre',
-  'Marzia',
-  'Ugo',
-  'Amparito',
-  'Mari Pili',
-  'Emmanuel',
-  'Rosetta',
-  'Padre Fernando',
-  'Sonia',
-  'Laia',
-  'Yivan',
-];
-
 const dateMap: Record<string, string> = {
   Friday: 'June 19, 2026',
   Saturday: 'June 20, 2026',
@@ -100,6 +77,7 @@ const defaultTask: Omit<Task, 'id'> = {
 
 export function TaskModal({ isOpen, onClose, onSave, task }: TaskModalProps) {
   const { t } = useTranslation();
+  const { members, isLoading: isLoadingMembers } = useTeam();
   const [formData, setFormData] = useState<Omit<Task, 'id'>>(defaultTask);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [taskType, setTaskType] = useState<'wedding' | 'preparation'>('wedding');
@@ -351,13 +329,16 @@ export function TaskModal({ isOpen, onClose, onSave, task }: TaskModalProps) {
             <Select
               value={formData.assignee || ''}
               onValueChange={(v) => setFormData(prev => ({ ...prev, assignee: v }))}
+              disabled={isLoadingMembers}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t('common.selectAssignee')} />
+                <SelectValue placeholder={isLoadingMembers ? "Loading..." : t('common.selectAssignee')} />
               </SelectTrigger>
               <SelectContent>
-                {assignees.map(person => (
-                  <SelectItem key={person} value={person}>{person}</SelectItem>
+                {members.map(member => (
+                  <SelectItem key={member.id} value={member.name}>
+                    {member.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
