@@ -126,7 +126,6 @@ export function LoginScreen() {
               <CardContent className="text-center">
                 <ul className="text-sm text-muted-foreground space-y-2 mb-6">
                   <li>• View all scheduled tasks</li>
-                  <li>• Update task status in real-time</li>
                   <li>• Track progress throughout the day</li>
                 </ul>
                 <p className="text-xs text-primary font-medium">Access code required</p>
