@@ -7,6 +7,14 @@ export interface BudgetItem {
     amount: number;
 }
 
+export interface PaymentItem {
+    id: number;
+    col1: string;
+    col2: string;
+    col3: string;
+    col4: string;
+}
+
 const STORAGE_KEY = 'budget_csv_url';
 
 // Helper to parse CSV lines correctly handling quoted fields containing commas
@@ -46,6 +54,8 @@ const parseCSVLine = (line: string): string[] => {
 
 export function useBudget() {
     const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
+    const [paymentItems, setPaymentItems] = useState<PaymentItem[]>([]);
+    const [paymentHeaders, setPaymentHeaders] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [savedUrl, setSavedUrl] = useState<string>('');
@@ -66,26 +76,41 @@ export function useBudget() {
             if (!response.ok) throw new Error('Failed to fetch CSV');
             const csvText = await response.text();
 
-            // Split lines but handle potential CRLF
             const lines = csvText.replace(/\r\n/g, '\n').split('\n');
+            const parsedLines = lines.map(line => parseCSVLine(line));
 
-            // Assume strict structure based on user request:
-            // Range A2:B21
-            // Column A (0): Category
-            // Column B (1): Amount
-
-            const newItems = lines.slice(1) // Skip header (row 1)
-                .slice(0, 20) // Limit to 20 data rows (rows 2-21)
-                .map(line => parseCSVLine(line))
-                .filter(row => row.length >= 2 && row[0]?.trim()) // Valid row check
+            // Budget Parsing (A2:B21)
+            const newBudgetItems = parsedLines.slice(1, 21) // Rows 2-21
+                .filter(row => row.length >= 2 && row[0]?.trim())
                 .map((row, index) => ({
                     id: index + 1,
                     category: row[0].trim(),
-                    // Remove currency symbols, non-breaking spaces, and handle "28,576" -> 28576
                     amount: parseFloat(row[1]?.replace(/[^\d.-]/g, '') || '0')
                 }));
 
-            setBudgetItems(newItems);
+            setBudgetItems(newBudgetItems);
+
+            // Payments Parsing (F1:I24)
+            // Header at Row 1 (Index 0), cols 5-8 (F-I)
+            if (parsedLines[0] && parsedLines[0].length >= 9) {
+                const headers = parsedLines[0].slice(5, 9).map(h => h.trim());
+                setPaymentHeaders(headers);
+            } else {
+                setPaymentHeaders(['Date', 'Description', 'Amount', 'Status']); // Fallback
+            }
+
+            // Data at Rows 2-24 (Indices 1-23), cols 5-8
+            const newPaymentItems = parsedLines.slice(1, 24)
+                .filter(row => row.length >= 6 && (row[5]?.trim() || row[6]?.trim())) // Check if F or G has data
+                .map((row, index) => ({
+                    id: index + 1,
+                    col1: row[5]?.trim() || '',
+                    col2: row[6]?.trim() || '',
+                    col3: row[7]?.trim() || '',
+                    col4: row[8]?.trim() || ''
+                }));
+
+            setPaymentItems(newPaymentItems);
         } catch (error) {
             console.error('Error loading budget:', error);
             toast.error(error instanceof Error ? error.message : 'Failed to load budget data');
@@ -112,6 +137,8 @@ export function useBudget() {
 
     return {
         budgetItems,
+        paymentItems,
+        paymentHeaders,
         isLoading,
         isSyncing,
         savedUrl,

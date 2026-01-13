@@ -15,9 +15,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function BudgetView() {
-    const { budgetItems, isLoading, isSyncing, savedUrl, updateSourceUrl, refreshBudget } = useBudget();
+    const { budgetItems, paymentItems, paymentHeaders, isLoading, isSyncing, savedUrl, updateSourceUrl, refreshBudget } = useBudget();
     const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
     const [csvUrl, setCsvUrl] = useState('');
 
@@ -68,9 +69,9 @@ export function BudgetView() {
                                     Enter the "Published to web" CSV link of your Google Sheet.
                                     <br />
                                     <span className="text-xs text-muted-foreground mt-2 block">
-                                        Data fetched from <strong>A2:B21</strong> (Header A1/B1 skipped).
+                                        <strong>Breakdown:</strong> A2:B21 (Category, Amount)
                                         <br />
-                                        Column A: <strong>Category</strong>, Column B: <strong>Amount</strong>.
+                                        <strong>Payments:</strong> F1:I24 (Headers + Data)
                                     </span>
                                 </DialogDescription>
                             </DialogHeader>
@@ -117,38 +118,93 @@ export function BudgetView() {
                 </Card>
             </div>
 
-            {/* Budget Table */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Detailed Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Category</TableHead>
-                                <TableHead className="text-right">Amount</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {budgetItems.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">
-                                        No budget items found. Sync from Google Sheets to get started.
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                budgetItems.map((item) => (
-                                    <TableRow key={item.id}>
-                                        <TableCell className="font-medium">{item.category}</TableCell>
-                                        <TableCell className="text-right">€{item.amount.toLocaleString()}</TableCell>
+            {/* Budget Tables */}
+            <Tabs defaultValue="breakdown" className="w-full">
+                <TabsList>
+                    <TabsTrigger value="breakdown">Detailed Breakdown</TabsTrigger>
+                    <TabsTrigger value="payments">Payments</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="breakdown">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Detailed Breakdown</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Category</TableHead>
+                                        <TableHead className="text-right">Amount</TableHead>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+                                </TableHeader>
+                                <TableBody>
+                                    {budgetItems.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">
+                                                No budget items found. Sync from Google Sheets to get started.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        budgetItems.map((item) => (
+                                            <TableRow key={item.id}>
+                                                <TableCell className="font-medium">{item.category}</TableCell>
+                                                <TableCell className="text-right">€{item.amount.toLocaleString()}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="payments">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Payments</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        {paymentHeaders.length > 0 ? (
+                                            paymentHeaders.map((header, idx) => (
+                                                <TableHead key={idx} className={idx > 0 && idx < 3 ? "text-right" : ""}>{header}</TableHead>
+                                            ))
+                                        ) : (
+                                            <>
+                                                <TableHead>Date</TableHead>
+                                                <TableHead>Description</TableHead>
+                                                <TableHead>Amount</TableHead>
+                                                <TableHead>Status</TableHead>
+                                            </>
+                                        )}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {paymentItems.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                                                No payment items found.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        paymentItems.map((item) => (
+                                            <TableRow key={item.id}>
+                                                <TableCell>{item.col1}</TableCell>
+                                                <TableCell>{item.col2}</TableCell>
+                                                <TableCell className="text-right">{item.col3}</TableCell>
+                                                <TableCell>{item.col4}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }
