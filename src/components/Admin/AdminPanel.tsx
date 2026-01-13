@@ -9,6 +9,7 @@ import { TimelineView } from '@/components/Common/TimelineView';
 import { TeamOverview } from '@/components/Common/TeamOverview';
 import { CalendarView } from '@/components/Common/CalendarView';
 import { IdeasBoard } from '@/components/Common/IdeasBoard';
+import { BudgetView } from '@/components/Common/BudgetView';
 import { StatsOverview } from './StatsOverview';
 import { TaskModal } from './TaskModal';
 import { UserManagement } from './UserManagement';
@@ -45,13 +46,15 @@ export function AdminPanel() {
   } = useTasks();
 
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget'
+  >('overview');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in-progress' | 'completed' | string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deleteTaskId, setDeleteTaskId] = useState<number | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
-  const [showResetDialog, setShowResetDialog] = useState(false);
+  // const [showResetDialog, setShowResetDialog] = useState(false); // Unused
   const [highlightedTaskId, setHighlightedTaskId] = useState<number | null>(null);
 
   // Helper to translate tab names based on activeTab
@@ -62,6 +65,7 @@ export function AdminPanel() {
       case 'team': return t('nav.team');
       case 'calendar': return t('nav.calendar');
       case 'cajon-sastre': return t('nav.cajonSastre');
+      case 'budget': return t('nav.budget');
       case 'Friday': return t('days.Friday');
       case 'Saturday': return t('days.Saturday');
       case 'Sunday': return t('days.Sunday');
@@ -152,7 +156,7 @@ export function AdminPanel() {
       <Navigation
         activeTab={activeTab}
         onTabChange={(tab) => {
-          setActiveTab(tab);
+          setActiveTab(tab as any);
           setStatusFilter(null);
         }}
         showOverview
@@ -213,6 +217,8 @@ export function AdminPanel() {
           </div>
         ) : activeTab === 'calendar' ? (
           <CalendarView tasks={tasks} onTaskClick={handleTaskJump} />
+        ) : activeTab === 'budget' ? (
+          <BudgetView />
         ) : activeTab === 'cajon-sastre' ? (
           <IdeasBoard onPromote={(content) => {
             setEditingTask(null); // Ensure new task mode
@@ -229,7 +235,7 @@ export function AdminPanel() {
               event: 'Preparation',
               category: 'Preparation',
               assignee: ''
-            } as Task);
+            } as any);
             setIsModalOpen(true);
           }} />
         ) : activeTab === 'overview' && !statusFilter ? (

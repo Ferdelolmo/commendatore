@@ -5,6 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, Clock, Loader2, Circle, AlertCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTeam } from '@/hooks/useTeam';
+import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { enUS, es, it } from 'date-fns/locale';
 
 interface TeamOverviewProps {
     tasks: Task[];
@@ -15,6 +19,10 @@ interface TeamOverviewProps {
 
 export function TeamOverview({ tasks, onSelectAssignee, selectedAssignee, onTaskClick }: TeamOverviewProps) {
     const { members } = useTeam();
+    const { t, i18n } = useTranslation();
+
+    // Determine current locale for date-fns
+    const dateLocale = i18n.language === 'es' ? es : i18n.language === 'it' ? it : enUS;
 
     // Group tasks by assignee
     const assigneeGroups = tasks.reduce((acc, task) => {
@@ -74,31 +82,60 @@ export function TeamOverview({ tasks, onSelectAssignee, selectedAssignee, onTask
                             <CardContent className="p-0 flex-1 min-h-0">
                                 <ScrollArea className="h-full">
                                     <div className="p-4 space-y-3">
-                                        {assigneeTasks.map(task => (
-                                            <div
-                                                key={task.id}
-                                                onClick={() => onTaskClick?.(task)}
-                                                className={`group flex items-start gap-3 text-sm p-2 rounded-lg hover:bg-accent/50 transition-colors border border-transparent hover:border-border ${onTaskClick ? 'cursor-pointer' : ''}`}
-                                            >
-                                                <div className="mt-0.5 shrink-0">
-                                                    {task.status === 'completed' ? (
-                                                        <CheckCircle2 className="h-4 w-4 text-success" />
-                                                    ) : task.status === 'in-progress' ? (
-                                                        <Loader2 className="h-4 w-4 text-info animate-spin" />
-                                                    ) : (
-                                                        <Circle className="h-4 w-4 text-muted-foreground" />
-                                                    )}
+                                        {assigneeTasks.map(task => {
+                                            // Format date
+                                            let dateDisplay = task.date;
+                                            try {
+                                                const dateObj = new Date(task.date);
+                                                if (!isNaN(dateObj.getTime())) {
+                                                    dateDisplay = format(dateObj, 'PP', { locale: dateLocale });
+                                                }
+                                            } catch (e) {
+                                                // Fallback to original string if parse fails
+                                            }
+
+                                            return (
+                                                <div
+                                                    key={task.id}
+                                                    onClick={() => onTaskClick?.(task)}
+                                                    className={`group flex items-start gap-3 text-sm p-3 rounded-lg hover:bg-accent/50 transition-colors border border-transparent hover:border-border ${onTaskClick ? 'cursor-pointer' : ''}`}
+                                                >
+                                                    <div className="mt-0.5 shrink-0">
+                                                        {task.status === 'completed' ? (
+                                                            <CheckCircle2 className="h-4 w-4 text-success" />
+                                                        ) : task.status === 'in-progress' ? (
+                                                            <Loader2 className="h-4 w-4 text-info animate-spin" />
+                                                        ) : (
+                                                            <Circle className="h-4 w-4 text-muted-foreground" />
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0 space-y-1.5">
+                                                        <div>
+                                                            <p className={`font-medium leading-none ${task.status === 'completed' ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                                                                {task.title}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground mt-1 truncate">
+                                                                {task.event}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="flex flex-wrap gap-2">
+                                                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 font-medium text-muted-foreground bg-secondary/30 border-secondary">
+                                                                {dateDisplay}
+                                                            </Badge>
+                                                            <Badge variant="outline" className={cn(
+                                                                "text-[10px] px-1.5 py-0 h-5 font-medium capitalize",
+                                                                task.priority === 'high' ? "text-destructive border-destructive/30 bg-destructive/5" :
+                                                                    task.priority === 'medium' ? "text-amber-500 border-amber-500/30 bg-amber-500/5" :
+                                                                        "text-muted-foreground border-border bg-muted/30"
+                                                            )}>
+                                                                {task.priority}
+                                                            </Badge>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className={`font-medium leading-none ${task.status === 'completed' ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                                                        {task.title}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground mt-1 truncate">
-                                                        {task.event}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </ScrollArea>
                             </CardContent>
