@@ -43,16 +43,8 @@ export function CalendarView({ tasks, onTaskClick }: CalendarViewProps) {
 
     // Determine initial month based on tasks or current date
     const initialDate = useMemo(() => {
-        if (tasks.length > 0) {
-            // Find the earliest task date
-            const earliest = tasks.reduce((min, t) => {
-                const d = new Date(t.date);
-                return isNaN(d.getTime()) ? min : (d < min ? d : min);
-            }, new Date(tasks[0].date));
-            if (!isNaN(earliest.getTime())) return earliest;
-        }
         return new Date();
-    }, [tasks]);
+    }, []);
 
     const [currentMonth, setCurrentMonth] = useState(initialDate);
 

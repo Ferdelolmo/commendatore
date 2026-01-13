@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Task, TaskDay, TaskStatus, TaskPriority, TaskCategory } from '@/types';
 import { getGoogleCalendarUrl } from '@/lib/calendar';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, VenetianMask } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -73,6 +74,7 @@ const defaultTask: Omit<Task, 'id'> = {
   status: 'pending',
   priority: 'medium',
   assignee: '',
+  isPrivate: false,
 };
 
 export function TaskModal({ isOpen, onClose, onSave, task }: TaskModalProps) {
@@ -301,6 +303,26 @@ export function TaskModal({ isOpen, onClose, onSave, task }: TaskModalProps) {
             </div>
           </div>
 
+          {/* Visibility / Private Note */}
+          <div className="flex items-center space-x-2 border p-3 rounded-lg bg-secondary/10">
+            <Switch
+              id="is-private"
+              checked={formData.isPrivate || false}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPrivate: checked }))}
+            />
+            <div className="grid gap-1.5 leading-none">
+              <div className="flex items-center gap-2">
+                <VenetianMask className="h-4 w-4 text-muted-foreground" />
+                <Label
+                  htmlFor="is-private"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {t('common.privateTask')}
+                </Label>
+              </div>
+            </div>
+          </div>
+
           {/* Status (only for editing) */}
           {task && (
             <div>
@@ -323,26 +345,51 @@ export function TaskModal({ isOpen, onClose, onSave, task }: TaskModalProps) {
             </div>
           )}
 
-          {/* Assignee */}
-          <div>
-            <Label>{t('common.assignee')}</Label>
-            <Select
-              value={formData.assignee || ''}
-              onValueChange={(v) => setFormData(prev => ({ ...prev, assignee: v }))}
-              disabled={isLoadingMembers}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={isLoadingMembers ? "Loading..." : t('common.selectAssignee')} />
-              </SelectTrigger>
-              <SelectContent>
-                {members.map(member => (
-                  <SelectItem key={member.id} value={member.name}>
-                    {member.name}
+          {/* Assignee and Collaborator */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>{t('common.assignee')}</Label>
+              <Select
+                value={formData.assignee || ''}
+                onValueChange={(v) => setFormData(prev => ({ ...prev, assignee: v }))}
+                disabled={isLoadingMembers}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={isLoadingMembers ? "Loading..." : t('common.selectAssignee')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {members.map(member => (
+                    <SelectItem key={member.id} value={member.name}>
+                      {member.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.assignee && <p className="text-xs text-destructive mt-1">{errors.assignee}</p>}
+            </div>
+
+            <div>
+              <Label>{t('common.collaborator')}</Label>
+              <Select
+                value={formData.collaborator || 'none'}
+                onValueChange={(v) => setFormData(prev => ({ ...prev, collaborator: v === 'none' ? undefined : v }))}
+                disabled={isLoadingMembers}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={isLoadingMembers ? "Loading..." : t('common.selectCollaborator')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">
+                    <span className="text-muted-foreground italic">None</span>
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.assignee && <p className="text-xs text-destructive mt-1">{errors.assignee}</p>}
+                  {members.map(member => (
+                    <SelectItem key={member.id} value={member.name}>
+                      {member.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Description */}

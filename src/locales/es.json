@@ -85,7 +85,10 @@
         "descriptionRequired": "La descripción es obligatoria",
         "timeFormatError": "La hora debe tener el formato HH:MM",
         "assigneeRequired": "El asignado es obligatorio",
-        "statusLabel": "Estado"
+        "statusLabel": "Estado",
+        "privateTask": "Tarea Privada",
+        "collaborator": "Colaborador",
+        "selectCollaborator": "Seleccionar colaborador"
     },
     "status": {
         "pending": "Pendiente",

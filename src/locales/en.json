@@ -86,7 +86,10 @@
         "descriptionRequired": "Description is required",
         "timeFormatError": "Time must be in HH:MM format",
         "assigneeRequired": "Assignee is required",
-        "statusLabel": "Status"
+        "statusLabel": "Status",
+        "privateTask": "Private Task",
+        "collaborator": "Collaborator",
+        "selectCollaborator": "Select collaborator"
     },
     "status": {
         "pending": "Pending",

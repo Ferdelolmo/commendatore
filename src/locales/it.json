@@ -85,7 +85,10 @@
         "descriptionRequired": "La descrizione è obbligatoria",
         "timeFormatError": "L'ora deve essere nel formato HH:MM",
         "assigneeRequired": "L'assegnatario è obbligatorio",
-        "statusLabel": "Stato"
+        "statusLabel": "Stato",
+        "privateTask": "Attività Privata",
+        "collaborator": "Collaboratore",
+        "selectCollaborator": "Seleziona collaboratore"
     },
     "status": {
         "pending": "In Attesa",

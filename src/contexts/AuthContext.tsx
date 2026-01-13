@@ -26,6 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAuthState({
           isAuthenticated: true,
           role: 'admin',
+          userEmail: session.user.email
         });
       }
     });
@@ -38,11 +39,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAuthState({
           isAuthenticated: true,
           role: 'admin',
+          userEmail: session.user.email
         });
       } else if (!isGuest) {
         setAuthState({
           isAuthenticated: false,
           role: null,
+          userEmail: null
         });
       }
     });
@@ -56,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAuthState({
         isAuthenticated: true,
         role: 'coordinator',
+        userEmail: null
       });
     } else {
       // If not guest and no session (handled by auth listener), verified there.
@@ -63,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAuthState({
           isAuthenticated: !!session,
           role: session ? 'admin' : null,
+          userEmail: session?.user.email || null
         });
       });
     }

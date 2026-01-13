@@ -3,10 +3,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { Task, TaskStatus, TaskStats, TaskDay } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { userEmail } = useAuth();
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -22,9 +24,17 @@ export function useTasks() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mappedTasks: Task[] = data.map((item: any) => ({
           ...item,
-          eventTime: item.event_time
+          eventTime: item.event_time,
+          isPrivate: item.is_private
         }));
-        setTasks(mappedTasks);
+
+        // Filter private tasks
+        const visibleTasks = mappedTasks.filter(t => {
+          if (!t.isPrivate) return true;
+          return userEmail === 'ciao@chiaraefer.com';
+        });
+
+        setTasks(visibleTasks);
       }
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -32,7 +42,7 @@ export function useTasks() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [userEmail]);
 
   // Subscribe to realtime changes
   useEffect(() => {
@@ -80,6 +90,11 @@ export function useTasks() {
       dbTask.event_time = task.eventTime;
       delete dbTask.eventTime;
 
+      if (task.isPrivate !== undefined) {
+        dbTask.is_private = task.isPrivate;
+        delete dbTask.isPrivate;
+      }
+
       console.log('Sending task to Supabase:', dbTask);
 
       const { data, error } = await supabase
@@ -113,6 +128,11 @@ export function useTasks() {
       if (updates.eventTime) {
         dbUpdates.event_time = updates.eventTime;
         delete dbUpdates.eventTime;
+      }
+
+      if (updates.isPrivate !== undefined) {
+        dbUpdates.is_private = updates.isPrivate;
+        delete dbUpdates.isPrivate;
       }
 
       const { error } = await supabase

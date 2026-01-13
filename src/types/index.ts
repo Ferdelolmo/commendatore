@@ -26,6 +26,8 @@ export interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   assignee?: string;
+  collaborator?: string;
+  isPrivate?: boolean;
 }
 
 export type UserRole = 'coordinator' | 'admin';
@@ -33,6 +35,7 @@ export type UserRole = 'coordinator' | 'admin';
 export interface AuthState {
   isAuthenticated: boolean;
   role: UserRole | null;
+  userEmail?: string | null;
 }
 
 export interface AppState {
