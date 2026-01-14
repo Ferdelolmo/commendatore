@@ -15,7 +15,7 @@ export interface PaymentItem {
     col4: string;
 }
 
-const STORAGE_KEY = 'budget_csv_url';
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQDpo77k17ulqhe1aodYGlAZ2jBAF_cpcrnmxsvdSBOCUurdRf6bCHS8t2eYIq9TTflMhhtGnqllihg/pub?output=csv';
 
 // Helper to parse CSV lines correctly handling quoted fields containing commas
 const parseCSVLine = (line: string): string[] => {
@@ -58,29 +58,20 @@ export function useBudget() {
     const [paymentHeaders, setPaymentHeaders] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
-    const [savedUrl, setSavedUrl] = useState<string>('');
 
-    // Load URL from local storage on mount
-    useEffect(() => {
-        const url = localStorage.getItem(STORAGE_KEY);
-        if (url) {
-            setSavedUrl(url);
-            fetchFromUrl(url);
-        }
-    }, []);
-
-    const fetchFromUrl = async (url: string) => {
+    const fetchBudget = async () => {
         setIsLoading(true);
+        setIsSyncing(true);
         try {
-            const response = await fetch(url);
+            const response = await fetch(CSV_URL);
             if (!response.ok) throw new Error('Failed to fetch CSV');
             const csvText = await response.text();
 
             const lines = csvText.replace(/\r\n/g, '\n').split('\n');
             const parsedLines = lines.map(line => parseCSVLine(line));
 
-            // Budget Parsing (A2:B21)
-            const newBudgetItems = parsedLines.slice(1, 21) // Rows 2-21
+            // Budget Parsing (A2:B23 corresponds to indices 1 to 22)
+            const newBudgetItems = parsedLines.slice(1, 23)
                 .filter(row => row.length >= 2 && row[0]?.trim())
                 .map((row, index) => ({
                     id: index + 1,
@@ -90,7 +81,7 @@ export function useBudget() {
 
             setBudgetItems(newBudgetItems);
 
-            // Payments Parsing (F1:I24)
+            // Payments Parsing (F1:I24 corresponds to indices 0 to 23)
             // Header at Row 1 (Index 0), cols 5-8 (F-I)
             if (parsedLines[0] && parsedLines[0].length >= 9) {
                 const headers = parsedLines[0].slice(5, 9).map(h => h.trim());
@@ -120,18 +111,14 @@ export function useBudget() {
         }
     };
 
-    const updateSourceUrl = async (url: string) => {
-        setIsSyncing(true);
-        localStorage.setItem(STORAGE_KEY, url);
-        setSavedUrl(url);
-        await fetchFromUrl(url);
-        toast.success('Budget source updated');
-    };
+    // Load budget from constant URL on mount
+    useEffect(() => {
+        fetchBudget();
+    }, []);
 
     const refreshBudget = async () => {
-        if (!savedUrl) return;
         setIsSyncing(true);
-        await fetchFromUrl(savedUrl);
+        await fetchBudget();
         toast.success('Budget refreshed');
     };
 
@@ -141,8 +128,6 @@ export function useBudget() {
         paymentHeaders,
         isLoading,
         isSyncing,
-        savedUrl,
-        updateSourceUrl,
         refreshBudget
     };
 }

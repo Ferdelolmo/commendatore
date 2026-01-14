@@ -1,40 +1,17 @@
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Euro, ArrowUpRight, ArrowDownRight, Printer, RefreshCw, Link as LinkIcon, ShieldCheck } from 'lucide-react';
+import { Euro, ArrowUpRight, ArrowDownRight, Printer, RefreshCw, ShieldCheck } from 'lucide-react';
 import { useBudget } from '@/hooks/useBudget';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function BudgetView() {
-    const { budgetItems, paymentItems, paymentHeaders, isLoading, isSyncing, savedUrl, updateSourceUrl, refreshBudget } = useBudget();
-    const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
-    const [csvUrl, setCsvUrl] = useState('');
-
-    // Pre-fill URL if saved
-    useState(() => {
-        if (savedUrl) setCsvUrl(savedUrl);
-    });
+    const { budgetItems, paymentItems, paymentHeaders, isLoading, isSyncing, refreshBudget } = useBudget();
 
     const totalBudget = budgetItems.reduce((acc, item) => acc + item.amount, 0);
     const totalBudgetWithGuardrail = totalBudget * 1.1;
-
-    const handleConnect = async () => {
-        if (!csvUrl) return;
-        await updateSourceUrl(csvUrl);
-        setIsSyncModalOpen(false);
-    };
 
     if (isLoading && budgetItems.length === 0) {
         return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading budget data...</div>;
@@ -48,51 +25,10 @@ export function BudgetView() {
                     <p className="text-muted-foreground">Track projected expenses</p>
                 </div>
                 <div className="flex gap-2">
-                    {savedUrl && (
-                        <Button variant="outline" size="sm" onClick={refreshBudget} disabled={isSyncing}>
-                            <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                            Refresh
-                        </Button>
-                    )}
-
-                    <Dialog open={isSyncModalOpen} onOpenChange={setIsSyncModalOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant={savedUrl ? "ghost" : "outline"} size="sm">
-                                <LinkIcon className="mr-2 h-4 w-4" />
-                                {savedUrl ? 'Edit Source' : 'Connect Sheet'}
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>{savedUrl ? 'Update Google Sheet Source' : 'Sync from Google Sheets'}</DialogTitle>
-                                <DialogDescription>
-                                    Enter the "Published to web" CSV link of your Google Sheet.
-                                    <br />
-                                    <span className="text-xs text-muted-foreground mt-2 block">
-                                        <strong>Breakdown:</strong> A2:B21 (Category, Amount)
-                                        <br />
-                                        <strong>Payments:</strong> F1:I24 (Headers + Data)
-                                    </span>
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="py-4">
-                                <div className="flex items-center gap-2 border rounded-md px-3 py-2">
-                                    <LinkIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-                                    <Input
-                                        value={csvUrl}
-                                        onChange={(e) => setCsvUrl(e.target.value)}
-                                        placeholder="https://docs.google.com/.../pub?output=csv"
-                                        className="border-0 focus-visible:ring-0 px-0 h-auto"
-                                    />
-                                </div>
-                            </div>
-                            <DialogFooter>
-                                <Button onClick={handleConnect} disabled={isSyncing || !csvUrl}>
-                                    {isSyncing ? 'Connecting...' : 'Save & Sync'}
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+                    <Button variant="outline" size="sm" onClick={refreshBudget} disabled={isSyncing}>
+                        <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                        Refresh
+                    </Button>
 
                     <Button variant="outline" size="sm">
                         <Printer className="mr-2 h-4 w-4" />
