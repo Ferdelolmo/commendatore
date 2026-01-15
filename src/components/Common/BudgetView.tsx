@@ -1,14 +1,37 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Euro, ArrowUpRight, ArrowDownRight, Printer, RefreshCw, ShieldCheck } from 'lucide-react';
+import {
+    Euro,
+    ShieldCheck,
+    Pencil,
+    Save,
+    Trash2,
+    Plus,
+    RefreshCw
+} from 'lucide-react';
 import { useBudget } from '@/hooks/useBudget';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function BudgetView() {
-    const { budgetItems, paymentItems, paymentHeaders, isLoading, isSyncing, refreshBudget } = useBudget();
+    const {
+        budgetItems,
+        paymentItems,
+        isLoading,
+        isSyncing,
+        refreshBudget,
+        addBudgetItem,
+        updateBudgetItem,
+        deleteBudgetItem,
+        addPaymentItem,
+        updatePaymentItem,
+        deletePaymentItem
+    } = useBudget();
+
+    const [isEditing, setIsEditing] = useState(false);
 
     const totalBudget = budgetItems.reduce((acc, item) => acc + item.amount, 0);
     const totalBudgetWithGuardrail = totalBudget * 1.1;
@@ -18,7 +41,7 @@ export function BudgetView() {
     }
 
     return (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6 animate-fade-in pb-20">
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-serif font-semibold text-foreground">Budget Overview</h2>
@@ -28,11 +51,6 @@ export function BudgetView() {
                     <Button variant="outline" size="sm" onClick={refreshBudget} disabled={isSyncing}>
                         <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
                         Refresh
-                    </Button>
-
-                    <Button variant="outline" size="sm">
-                        <Printer className="mr-2 h-4 w-4" />
-                        Export
                     </Button>
                 </div>
             </div>
@@ -63,8 +81,13 @@ export function BudgetView() {
 
                 <TabsContent value="breakdown">
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>Detailed Breakdown</CardTitle>
+                            {isEditing && (
+                                <Button size="sm" variant="outline" onClick={() => addBudgetItem({ category: 'New Item', amount: 0 })}>
+                                    <Plus className="h-4 w-4 mr-2" /> Add Item
+                                </Button>
+                            )}
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -72,20 +95,44 @@ export function BudgetView() {
                                     <TableRow>
                                         <TableHead>Category</TableHead>
                                         <TableHead className="text-right">Amount</TableHead>
+                                        {isEditing && <TableHead className="w-[50px]"></TableHead>}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {budgetItems.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">
-                                                No budget items found. Sync from Google Sheets to get started.
+                                            <TableCell colSpan={isEditing ? 3 : 2} className="text-center py-8 text-muted-foreground">
+                                                No items found.
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         budgetItems.map((item) => (
                                             <TableRow key={item.id}>
-                                                <TableCell className="font-medium">{item.category}</TableCell>
-                                                <TableCell className="text-right">€{item.amount.toLocaleString()}</TableCell>
+                                                <TableCell className="font-medium">
+                                                    {isEditing ? (
+                                                        <Input
+                                                            value={item.category}
+                                                            onChange={(e) => updateBudgetItem(item.id, { category: e.target.value })}
+                                                        />
+                                                    ) : item.category}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {isEditing ? (
+                                                        <Input
+                                                            type="number"
+                                                            className="text-right"
+                                                            value={item.amount}
+                                                            onChange={(e) => updateBudgetItem(item.id, { amount: parseFloat(e.target.value) || 0 })}
+                                                        />
+                                                    ) : `€${item.amount.toLocaleString()}`}
+                                                </TableCell>
+                                                {isEditing && (
+                                                    <TableCell>
+                                                        <Button variant="ghost" size="icon" onClick={() => deleteBudgetItem(item.id)}>
+                                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                                        </Button>
+                                                    </TableCell>
+                                                )}
                                             </TableRow>
                                         ))
                                     )}
@@ -97,41 +144,80 @@ export function BudgetView() {
 
                 <TabsContent value="payments">
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>Payments</CardTitle>
+                            {isEditing && (
+                                <Button size="sm" variant="outline" onClick={() => addPaymentItem({ description: 'New Payment', amount: 0, paid: 0, pending: 0 })}>
+                                    <Plus className="h-4 w-4 mr-2" /> Add Payment
+                                </Button>
+                            )}
                         </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        {paymentHeaders.length > 0 ? (
-                                            paymentHeaders.map((header, idx) => (
-                                                <TableHead key={idx} className={idx > 0 && idx < 3 ? "text-right" : ""}>{header}</TableHead>
-                                            ))
-                                        ) : (
-                                            <>
-                                                <TableHead>Date</TableHead>
-                                                <TableHead>Description</TableHead>
-                                                <TableHead>Amount</TableHead>
-                                                <TableHead>Status</TableHead>
-                                            </>
-                                        )}
+                                        <TableHead>Concept</TableHead>
+                                        <TableHead className="text-right">Total</TableHead>
+                                        <TableHead className="text-right">Paid</TableHead>
+                                        <TableHead className="text-right">Pending</TableHead>
+                                        {isEditing && <TableHead className="w-[50px]"></TableHead>}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {paymentItems.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                                            <TableCell colSpan={isEditing ? 5 : 4} className="text-center py-8 text-muted-foreground">
                                                 No payment items found.
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         paymentItems.map((item) => (
                                             <TableRow key={item.id}>
-                                                <TableCell>{item.col1}</TableCell>
-                                                <TableCell>{item.col2}</TableCell>
-                                                <TableCell className="text-right">{item.col3}</TableCell>
-                                                <TableCell>{item.col4}</TableCell>
+                                                <TableCell>
+                                                    {isEditing ? (
+                                                        <Input
+                                                            value={item.description}
+                                                            onChange={(e) => updatePaymentItem(item.id, { description: e.target.value })}
+                                                        />
+                                                    ) : item.description}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {isEditing ? (
+                                                        <Input
+                                                            type="number"
+                                                            className="text-right"
+                                                            value={item.amount}
+                                                            onChange={(e) => updatePaymentItem(item.id, { amount: parseFloat(e.target.value) || 0 })}
+                                                        />
+                                                    ) : `€${item.amount.toLocaleString()}`}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {isEditing ? (
+                                                        <Input
+                                                            type="number"
+                                                            className="text-right"
+                                                            value={item.paid}
+                                                            onChange={(e) => updatePaymentItem(item.id, { paid: parseFloat(e.target.value) || 0 })}
+                                                        />
+                                                    ) : `€${item.paid.toLocaleString()}`}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {isEditing ? (
+                                                        <Input
+                                                            type="number"
+                                                            className="text-right"
+                                                            value={item.pending}
+                                                            onChange={(e) => updatePaymentItem(item.id, { pending: parseFloat(e.target.value) || 0 })}
+                                                        />
+                                                    ) : `€${item.pending.toLocaleString()}`}
+                                                </TableCell>
+                                                {isEditing && (
+                                                    <TableCell>
+                                                        <Button variant="ghost" size="icon" onClick={() => deletePaymentItem(item.id)}>
+                                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                                        </Button>
+                                                    </TableCell>
+                                                )}
                                             </TableRow>
                                         ))
                                     )}
@@ -141,6 +227,26 @@ export function BudgetView() {
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            {/* Floating Edit/Save Action Button */}
+            <div className="fixed bottom-6 right-6 z-50">
+                <Button
+                    size="lg"
+                    className="shadow-lg rounded-full px-6"
+                    onClick={() => setIsEditing(!isEditing)}
+                    variant={isEditing ? "default" : "secondary"}
+                >
+                    {isEditing ? (
+                        <>
+                            <Save className="mr-2 h-4 w-4" /> Done Editing
+                        </>
+                    ) : (
+                        <>
+                            <Pencil className="mr-2 h-4 w-4" /> Edit Budget
+                        </>
+                    )}
+                </Button>
+            </div>
         </div>
     );
 }

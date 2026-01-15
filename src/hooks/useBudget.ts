@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 export interface BudgetItem {
     id: number;
@@ -9,111 +10,61 @@ export interface BudgetItem {
 
 export interface PaymentItem {
     id: number;
-    col1: string;
-    col2: string;
-    col3: string;
-    col4: string;
+    description: string;
+    amount: number;
+    paid: number;
+    pending: number;
 }
-
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQDpo77k17ulqhe1aodYGlAZ2jBAF_cpcrnmxsvdSBOCUurdRf6bCHS8t2eYIq9TTflMhhtGnqllihg/pub?output=csv';
-
-// Helper to parse CSV lines correctly handling quoted fields containing commas
-const parseCSVLine = (line: string): string[] => {
-    const result: string[] = [];
-    let startValueIndex = 0;
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-
-        if (char === '"') {
-            inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-            let value = line.substring(startValueIndex, i).trim();
-            // Remove wrapping quotes if present
-            if (value.startsWith('"') && value.endsWith('"')) {
-                value = value.slice(1, -1);
-            }
-            // Handle double double-quotes (escaped quotes)
-            value = value.replace(/""/g, '"');
-            result.push(value);
-            startValueIndex = i + 1;
-        }
-    }
-
-    // Add last value
-    let lastValue = line.substring(startValueIndex).trim();
-    if (lastValue.startsWith('"') && lastValue.endsWith('"')) {
-        lastValue = lastValue.slice(1, -1);
-    }
-    lastValue = lastValue.replace(/""/g, '"');
-    result.push(lastValue);
-
-    return result;
-};
 
 export function useBudget() {
     const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
     const [paymentItems, setPaymentItems] = useState<PaymentItem[]>([]);
-    const [paymentHeaders, setPaymentHeaders] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
 
     const fetchBudget = async () => {
         setIsLoading(true);
-        setIsSyncing(true);
         try {
-            const response = await fetch(CSV_URL);
-            if (!response.ok) throw new Error('Failed to fetch CSV');
-            const csvText = await response.text();
+            const { data: budgetData, error: budgetError } = await supabase
+                .from('budget_items')
+                .select('*')
+                .order('id', { ascending: true });
 
-            const lines = csvText.replace(/\r\n/g, '\n').split('\n');
-            const parsedLines = lines.map(line => parseCSVLine(line));
+            if (budgetError) throw budgetError;
 
-            // Budget Parsing (A2:B23 corresponds to indices 1 to 22)
-            const newBudgetItems = parsedLines.slice(1, 23)
-                .filter(row => row.length >= 2 && row[0]?.trim())
-                .map((row, index) => ({
-                    id: index + 1,
-                    category: row[0].trim(),
-                    amount: parseFloat(row[1]?.replace(/[^\d.-]/g, '') || '0')
-                }));
+            const { data: paymentData, error: paymentError } = await supabase
+                .from('budget_payments')
+                .select('*')
+                .order('id', { ascending: true });
 
-            setBudgetItems(newBudgetItems);
+            if (paymentError) throw paymentError;
 
-            // Payments Parsing (F1:I24 corresponds to indices 0 to 23)
-            // Header at Row 1 (Index 0), cols 5-8 (F-I)
-            if (parsedLines[0] && parsedLines[0].length >= 9) {
-                const headers = parsedLines[0].slice(5, 9).map(h => h.trim());
-                setPaymentHeaders(headers);
-            } else {
-                setPaymentHeaders(['Date', 'Description', 'Amount', 'Status']); // Fallback
-            }
+            setBudgetItems(budgetData || []);
+            setPaymentItems(paymentData || []);
 
-            // Data at Rows 2-24 (Indices 1-23), cols 5-8
-            const newPaymentItems = parsedLines.slice(1, 24)
-                .filter(row => row.length >= 6 && (row[5]?.trim() || row[6]?.trim())) // Check if F or G has data
-                .map((row, index) => ({
-                    id: index + 1,
-                    col1: row[5]?.trim() || '',
-                    col2: row[6]?.trim() || '',
-                    col3: row[7]?.trim() || '',
-                    col4: row[8]?.trim() || ''
-                }));
-
-            setPaymentItems(newPaymentItems);
         } catch (error) {
             console.error('Error loading budget:', error);
-            toast.error(error instanceof Error ? error.message : 'Failed to load budget data');
+            toast.error('Failed to load budget data');
         } finally {
             setIsLoading(false);
             setIsSyncing(false);
         }
     };
 
-    // Load budget from constant URL on mount
+    // Load budget on mount
     useEffect(() => {
         fetchBudget();
+
+        // Subscribe to realtime changes (optional but good for multi-admin)
+        const budgetChannel = supabase
+            .channel('budget-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_items' }, () => fetchBudget())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_payments' }, () => fetchBudget())
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(budgetChannel);
+        };
     }, []);
 
     const refreshBudget = async () => {
@@ -122,12 +73,89 @@ export function useBudget() {
         toast.success('Budget refreshed');
     };
 
+    const addBudgetItem = async (item: Omit<BudgetItem, 'id'>) => {
+        try {
+            const { error } = await supabase.from('budget_items').insert(item);
+            if (error) throw error;
+            toast.success('Item added');
+            fetchBudget();
+        } catch (error) {
+            toast.error('Failed to add item');
+            console.error(error);
+        }
+    };
+
+    const updateBudgetItem = async (id: number, updates: Partial<BudgetItem>) => {
+        try {
+            const { error } = await supabase.from('budget_items').update(updates).eq('id', id);
+            if (error) throw error;
+            toast.success('Item updated');
+            fetchBudget();
+        } catch (error) {
+            toast.error('Failed to update item');
+            console.error(error);
+        }
+    };
+
+    const deleteBudgetItem = async (id: number) => {
+        try {
+            const { error } = await supabase.from('budget_items').delete().eq('id', id);
+            if (error) throw error;
+            toast.success('Item deleted');
+            fetchBudget();
+        } catch (error) {
+            toast.error('Failed to delete item');
+            console.error(error);
+        }
+    };
+
+    const addPaymentItem = async (item: Omit<PaymentItem, 'id'>) => {
+        try {
+            const { error } = await supabase.from('budget_payments').insert(item);
+            if (error) throw error;
+            toast.success('Payment added');
+            fetchBudget();
+        } catch (error) {
+            toast.error('Failed to add payment');
+            console.error(error);
+        }
+    };
+
+    const updatePaymentItem = async (id: number, updates: Partial<PaymentItem>) => {
+        try {
+            const { error } = await supabase.from('budget_payments').update(updates).eq('id', id);
+            if (error) throw error;
+            toast.success('Payment updated');
+            fetchBudget();
+        } catch (error) {
+            toast.error('Failed to update payment');
+            console.error(error);
+        }
+    };
+
+    const deletePaymentItem = async (id: number) => {
+        try {
+            const { error } = await supabase.from('budget_payments').delete().eq('id', id);
+            if (error) throw error;
+            toast.success('Payment deleted');
+            fetchBudget();
+        } catch (error) {
+            toast.error('Failed to delete payment');
+            console.error(error);
+        }
+    };
+
     return {
         budgetItems,
         paymentItems,
-        paymentHeaders,
         isLoading,
         isSyncing,
-        refreshBudget
+        refreshBudget,
+        addBudgetItem,
+        updateBudgetItem,
+        deleteBudgetItem,
+        addPaymentItem,
+        updatePaymentItem,
+        deletePaymentItem
     };
 }
