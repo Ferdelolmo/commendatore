@@ -169,8 +169,25 @@ export function useTasks() {
   }, [fetchTasks]);
 
   const getTasksByDay = useCallback((day: TaskDay): Task[] => {
+    // Define the specific wedding dates for each day
+    const WEDDING_DATES: Record<string, string> = {
+      Friday: 'June 19, 2026',
+      Saturday: 'June 20, 2026',
+      Sunday: 'June 21, 2026',
+    };
+
     return tasks
-      .filter(task => task.day === day)
+      .filter(task => {
+        // Strict filter: Must match the Day name AND the specific Wedding Date
+        // If the task has a different date (e.g., Jan 31st), it won't appear in these specific tabs
+        // even if it falls on a 'Saturday'.
+        const targetDate = WEDDING_DATES[day];
+        if (targetDate) {
+          return task.day === day && task.date === targetDate;
+        }
+        // Fallback for any other potential days (though TaskDay is likely strict)
+        return task.day === day;
+      })
       .sort((a, b) => a.eventTime.localeCompare(b.eventTime));
   }, [tasks]);
 

@@ -110,7 +110,8 @@
         "totalPaid": "Totale Pagato",
         "amountPaid": "Importo già pagato",
         "totalPending": "Totale In Sospeso",
-        "amountRemaining": "Importo rimanente da pagare"
+        "amountRemaining": "Importo rimanente da pagare",
+        "endOfTasks": "Fine della Cronologia"
     },
     "status": {
         "pending": "In Attesa",

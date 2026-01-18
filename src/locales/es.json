@@ -110,7 +110,8 @@
         "totalPaid": "Total Pagado",
         "amountPaid": "Cantidad ya pagada",
         "totalPending": "Total Pendiente",
-        "amountRemaining": "Cantidad restante por pagar"
+        "amountRemaining": "Cantidad restante por pagar",
+        "endOfTasks": "Fin de la Cronología"
     },
     "status": {
         "pending": "Pendiente",

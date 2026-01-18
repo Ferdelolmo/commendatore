@@ -244,6 +244,14 @@ export function AdminPanel() {
             highPriorityTasks={highPriorityTasks}
             onFilterClick={(filter) => setStatusFilter(filter)}
           />
+        ) : (activeTab === 'Friday' || activeTab === 'Saturday' || activeTab === 'Sunday') ? (
+          <TimelineView
+            tasks={getTasksByDay(activeTab as TaskDay)}
+            onEdit={handleEdit}
+            onStatusChange={handleStatusChange}
+            highlightedTaskId={highlightedTaskId}
+            variant="smart"
+          />
         ) : (
           <TaskList
             tasks={statusFilter

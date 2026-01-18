@@ -111,7 +111,8 @@
         "totalPaid": "Total Paid",
         "amountPaid": "Amount already paid",
         "totalPending": "Total Pending",
-        "amountRemaining": "Amount remaining to pay"
+        "amountRemaining": "Amount remaining to pay",
+        "endOfTasks": "End of Timeline"
     },
     "status": {
         "pending": "Pending",

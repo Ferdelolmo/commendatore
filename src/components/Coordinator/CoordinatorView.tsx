@@ -155,11 +155,10 @@ export function CoordinatorView() {
         ) : activeTab === 'calendar' ? (
           <CalendarView tasks={tasks} />
         ) : (
-          <TaskList
+          <TimelineView
             tasks={tasks}
             onStatusChange={handleStatusChange}
-            isAdmin={false}
-            emptyMessage={`No tasks scheduled for ${activeTab}`}
+            variant="smart"
           />
         )}
       </main>
