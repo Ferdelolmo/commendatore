@@ -62,3 +62,14 @@ export interface TeamMember {
   avatarUrl?: string;
   phoneNumber?: string;
 }
+
+export interface Supplier {
+  id: string;
+  name: string;
+  category: string;
+  contact_info?: string;
+  status: 'Proposed' | 'Contacted' | 'Booked' | 'Rejected';
+  price?: number;
+  notes?: string;
+  created_at?: string;
+}

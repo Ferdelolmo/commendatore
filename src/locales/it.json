@@ -129,6 +129,7 @@
         "team": "Team",
         "calendar": "Calendario",
         "cajonSastre": "Misto",
-        "budget": "Budget"
+        "budget": "Budget",
+        "suppliers": "Fornitori"
     }
 }

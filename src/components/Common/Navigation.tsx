@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { TaskDay } from '@/types';
 import { cn } from '@/lib/utils';
-import { Calendar, LayoutDashboard, Users, Clock, PartyPopper, Sunset, Sun, Archive, PiggyBank } from 'lucide-react';
+import { Calendar, LayoutDashboard, Users, Clock, PartyPopper, Sunset, Sun, Archive, PiggyBank, Briefcase } from 'lucide-react';
 
 interface NavigationProps {
-  activeTab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget';
-  onTabChange: (tab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget') => void;
+  activeTab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers';
+  onTabChange: (tab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers') => void;
   showOverview?: boolean;
 }
 
@@ -120,6 +120,19 @@ export function Navigation({ activeTab, onTabChange, showOverview = false }: Nav
           >
             <PiggyBank className="h-4 w-4" />
             {t('nav.budget')}
+          </button>
+
+          <button
+            onClick={() => onTabChange('suppliers')}
+            className={cn(
+              'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap',
+              activeTab === 'suppliers'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+            )}
+          >
+            <Briefcase className="h-4 w-4" />
+            {t('nav.suppliers')}
           </button>
         </div>
       </div>
