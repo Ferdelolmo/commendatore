@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 interface AuthContextType extends AuthState {
   login: (email: string, password?: string) => Promise<boolean>;
   loginAsGuest: () => void;
-  loginAsPrototypeAdmin: () => void;
   logout: () => Promise<void>;
 }
 
@@ -97,25 +96,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsGuest(true);
   };
 
-  const loginAsPrototypeAdmin = () => {
-    // Sets specific state for the prototype admin experience
-    setIsGuest(false); // It's not a guest 'coordinator' session
-    setAuthState({
-      isAuthenticated: true,
-      role: 'admin',
-      userEmail: 'chiaraefer' // Mock username
-    });
-    toast.success('Welcome back, Commendatore.');
-  };
-
   const logout = async () => {
-    if (isGuest || authState.userEmail === 'chiaraefer') {
+    if (isGuest) {
       setIsGuest(false);
-      setAuthState({
-        isAuthenticated: false,
-        role: null,
-        userEmail: null
-      });
     } else {
       await supabase.auth.signOut();
     }
@@ -123,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ ...authState, login, loginAsGuest, loginAsPrototypeAdmin, logout }}>
+    <AuthContext.Provider value={{ ...authState, login, loginAsGuest, logout }}>
       {children}
     </AuthContext.Provider>
   );
