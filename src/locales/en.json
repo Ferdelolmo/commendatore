@@ -131,6 +131,8 @@
         "calendar": "Calendar",
         "cajonSastre": "All Sorts",
         "budget": "Budget",
-        "suppliers": "Suppliers"
+        "guests": "Guest List",
+        "suppliers": "Suppliers",
+        "days": "Days"
     }
 }

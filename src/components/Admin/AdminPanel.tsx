@@ -14,6 +14,7 @@ import { StatsOverview } from './StatsOverview';
 import { TaskModal } from './TaskModal';
 import { UserManagement } from './UserManagement';
 import { SuppliersView } from '@/components/Common/SuppliersView';
+import { GuestList } from './GuestList';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -48,7 +49,7 @@ export function AdminPanel() {
 
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<
-    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers'
+    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'guests'
   >('overview');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in-progress' | 'completed' | string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -68,6 +69,7 @@ export function AdminPanel() {
       case 'cajon-sastre': return t('nav.cajonSastre');
       case 'budget': return t('nav.budget');
       case 'suppliers': return t('nav.suppliers');
+      case 'guests': return t('nav.guests');
       case 'Friday': return t('days.Friday');
       case 'Saturday': return t('days.Saturday');
       case 'Sunday': return t('days.Sunday');
@@ -166,7 +168,7 @@ export function AdminPanel() {
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-6">
         {/* Action Bar */}
-        {activeTab !== 'cajon-sastre' && activeTab !== 'users' && activeTab !== 'budget' && activeTab !== 'suppliers' && (
+        {activeTab !== 'cajon-sastre' && activeTab !== 'users' && activeTab !== 'budget' && activeTab !== 'suppliers' && activeTab !== 'guests' && (
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
               {statusFilter && (
@@ -223,6 +225,8 @@ export function AdminPanel() {
           <BudgetView />
         ) : activeTab === 'suppliers' ? (
           <SuppliersView />
+        ) : activeTab === 'guests' ? (
+          <GuestList />
         ) : activeTab === 'cajon-sastre' ? (
           <IdeasBoard onPromote={(content) => {
             setEditingTask(null); // Ensure new task mode

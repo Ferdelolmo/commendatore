@@ -73,3 +73,14 @@ export interface Supplier {
   notes?: string;
   created_at?: string;
 }
+
+export interface Guest {
+  id: string;
+  name: string;
+  confirmation_status: 'Pending' | 'Confirmed' | 'Declined';
+  menu_preference: string;
+  allergies?: string;
+  attending_pre_wedding: boolean;
+  transport_needs: string;
+  notes?: string;
+}

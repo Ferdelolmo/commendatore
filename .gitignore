@@ -1,0 +1,12 @@
+# System and Env
+.DS_Store
+.env
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+
+# Security
+supabase/migrations/

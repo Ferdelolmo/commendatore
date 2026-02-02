@@ -130,6 +130,8 @@
         "calendar": "Calendario",
         "cajonSastre": "Cajón de sastre",
         "budget": "Presupuesto",
-        "suppliers": "Proveedores"
+        "guests": "Lista de Invitados",
+        "suppliers": "Proveedores",
+        "days": "Días"
     }
 }

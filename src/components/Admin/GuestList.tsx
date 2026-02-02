@@ -1,0 +1,305 @@
+import { useState } from "react";
+import { useGuests } from "@/hooks/useGuests";
+import { Guest } from "@/types";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Pencil, Trash2, Search, Download } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+export function GuestList() {
+    const { guests, isLoading, addGuest, updateGuest, deleteGuest, stats } = useGuests();
+    const [searchTerm, setSearchTerm] = useState("");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
+    const [formData, setFormData] = useState<Partial<Guest>>({});
+
+    const filteredGuests = guests.filter((guest) =>
+        guest.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const handleOpenModal = (guest?: Guest) => {
+        if (guest) {
+            setEditingGuest(guest);
+            setFormData(guest);
+        } else {
+            setEditingGuest(null);
+            setFormData({
+                confirmation_status: "Pending",
+                menu_preference: "Standard",
+                transport_needs: "None",
+                attending_pre_wedding: false,
+            });
+        }
+        setIsModalOpen(true);
+    };
+
+    const handleSave = async () => {
+        try {
+            if (!formData.name) return;
+
+            if (editingGuest) {
+                await updateGuest(editingGuest.id, formData);
+            } else {
+                await addGuest(formData as any);
+            }
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const exportToCSV = () => {
+        const headers = ["Name,Status,Menu,Allergies,Pre-Wedding,Transport,Notes"];
+        const rows = guests.map(g =>
+            `"${g.name}","${g.confirmation_status}","${g.menu_preference}","${g.allergies || ''}","${g.attending_pre_wedding ? 'Yes' : 'No'}","${g.transport_needs}","${g.notes || ''}"`
+        );
+        const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "wedding_guest_list.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    if (isLoading) return <div>Loading...</div>;
+
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card>
+                    <CardHeader className="py-4">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Guests</CardTitle>
+                        <div className="text-2xl font-bold">{stats.total}</div>
+                    </CardHeader>
+                </Card>
+                <Card>
+                    <CardHeader className="py-4">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Confirmed</CardTitle>
+                        <div className="text-2xl font-bold text-green-600">{stats.confirmed}</div>
+                    </CardHeader>
+                </Card>
+                <Card>
+                    <CardHeader className="py-4">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Pre-Wedding</CardTitle>
+                        <div className="text-2xl font-bold">{stats.preWedding}</div>
+                    </CardHeader>
+                </Card>
+                <Card>
+                    <CardHeader className="py-4">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Need Transport</CardTitle>
+                        <div className="text-2xl font-bold">{stats.needsTransport}</div>
+                    </CardHeader>
+                </Card>
+            </div>
+
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="relative w-full md:w-72">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search guests..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8"
+                    />
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={exportToCSV}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Export CSV
+                    </Button>
+                    <Button onClick={() => handleOpenModal()}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Guest
+                    </Button>
+                </div>
+            </div>
+
+            <div className="rounded-md border bg-card">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Menu</TableHead>
+                            <TableHead>Allergies</TableHead>
+                            <TableHead className="text-center">Pre-Wedding</TableHead>
+                            <TableHead>Transport</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredGuests.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={7} className="h-24 text-center">
+                                    No guests found.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            filteredGuests.map((guest) => (
+                                <TableRow key={guest.id}>
+                                    <TableCell className="font-medium">{guest.name}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={
+                                            guest.confirmation_status === 'Confirmed' ? 'default' :
+                                                guest.confirmation_status === 'Declined' ? 'destructive' : 'secondary'
+                                        }>
+                                            {guest.confirmation_status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>{guest.menu_preference}</TableCell>
+                                    <TableCell className="max-w-[150px] truncate" title={guest.allergies || ''}>
+                                        {guest.allergies || '-'}
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        {guest.attending_pre_wedding ? (
+                                            <span className="text-green-600 font-bold">✓</span>
+                                        ) : (
+                                            <span className="text-muted-foreground">-</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>{guest.transport_needs}</TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Button variant="ghost" size="icon" onClick={() => handleOpenModal(guest)}>
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => deleteGuest(guest.id)}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>{editingGuest ? "Edit Guest" : "Add Guest"}</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="name">Name</Label>
+                            <Input
+                                id="name"
+                                value={formData.name || ""}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="status">Confirmed Assistance</Label>
+                                <Select
+                                    value={formData.confirmation_status}
+                                    onValueChange={(val: any) => setFormData({ ...formData, confirmation_status: val })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Pending">Pending</SelectItem>
+                                        <SelectItem value="Confirmed">Confirmed</SelectItem>
+                                        <SelectItem value="Declined">Declined</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="menu">Menu Preference</Label>
+                                <Select
+                                    value={formData.menu_preference}
+                                    onValueChange={(val) => setFormData({ ...formData, menu_preference: val })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Standard">Standard</SelectItem>
+                                        <SelectItem value="Vegetarian">Vegetarian</SelectItem>
+                                        <SelectItem value="Vegan">Vegan</SelectItem>
+                                        <SelectItem value="Celiac">Celiac</SelectItem>
+                                        <SelectItem value="Children">Children</SelectItem>
+                                        <SelectItem value="Other">Other</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="allergies">Allergies / Dietary Restrictions</Label>
+                            <Input
+                                id="allergies"
+                                value={formData.allergies || ""}
+                                onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
+                                placeholder="e.g. Peanuts, Shellfish..."
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="transport">Transport</Label>
+                                <Select
+                                    value={formData.transport_needs}
+                                    onValueChange={(val) => setFormData({ ...formData, transport_needs: val })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="None">None (Own car)</SelectItem>
+                                        <SelectItem value="Bus">Bus</SelectItem>
+                                        <SelectItem value="Car">Car</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="flex items-center gap-2 pt-8">
+                                <Checkbox
+                                    id="prewedding"
+                                    checked={formData.attending_pre_wedding}
+                                    onCheckedChange={(checked) => setFormData({ ...formData, attending_pre_wedding: checked as boolean })}
+                                />
+                                <Label htmlFor="prewedding">Attending Pre-Wedding</Label>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="notes">Notes</Label>
+                            <Textarea
+                                id="notes"
+                                value={formData.notes || ''}
+                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                placeholder="Table seating requests, etc."
+                            />
+                        </div>
+
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSave}>Save</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+}

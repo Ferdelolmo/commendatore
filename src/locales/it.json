@@ -130,6 +130,8 @@
         "calendar": "Calendario",
         "cajonSastre": "Misto",
         "budget": "Budget",
-        "suppliers": "Fornitori"
+        "guests": "Lista degli Invitati",
+        "suppliers": "Fornitori",
+        "days": "Giorni"
     }
 }
