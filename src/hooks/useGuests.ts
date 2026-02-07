@@ -57,6 +57,34 @@ export function useGuests() {
             throw error;
         }
     };
+    const addGuests = async (newGuests: Omit<Guest, 'id'>[]) => {
+        try {
+            const { data, error } = await supabase
+                .from('guests')
+                .insert(newGuests)
+                .select();
+
+            if (error) throw error;
+
+            if (data) {
+                setGuests((prev) => [...prev, ...data].sort((a, b) => a.name.localeCompare(b.name)));
+                toast({
+                    title: 'Success',
+                    description: `${data.length} guests added successfully`,
+                });
+            }
+            return data;
+        } catch (error) {
+            console.error('Error adding guests:', error);
+            toast({
+                title: 'Error',
+                description: 'Failed to add guests',
+                variant: 'destructive',
+            });
+            throw error;
+        }
+    };
+
 
     const updateGuest = async (id: string, updates: Partial<Guest>) => {
         try {
@@ -132,6 +160,7 @@ export function useGuests() {
         guests,
         isLoading,
         addGuest,
+        addGuests,
         updateGuest,
         deleteGuest,
         refreshGuests: fetchGuests,

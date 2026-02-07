@@ -12,7 +12,8 @@ export type TaskCategory =
   | 'Guest Management'
   | 'Photography'
   | 'Catering'
-  | 'Entertainment';
+  | 'Entertainment'
+  | 'Tables';
 
 export interface Task {
   id: number;
@@ -83,4 +84,18 @@ export interface Guest {
   attending_pre_wedding: boolean;
   transport_needs: string;
   notes?: string;
+  table_id?: string;
+  plus_one?: boolean;
+}
+
+export interface Table {
+  id: string;
+  name: string;
+  shape: 'circle' | 'square' | 'rectangle';
+  capacity: {
+    min: number;
+    max: number;
+  };
+  position?: { x: number; y: number };
+  guests?: Guest[];
 }

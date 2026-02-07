@@ -80,7 +80,6 @@
         "description": "Description",
         "descriptionPlaceholder": "Detailed instructions for this task...",
         "addToCalendar": "Add to Calendar",
-        "saveChanges": "Save Changes",
         "titleRequired": "Title is required",
         "eventRequired": "Event is required",
         "descriptionRequired": "Description is required",
@@ -114,6 +113,32 @@
         "amountRemaining": "Amount remaining to pay",
         "endOfTasks": "End of Timeline"
     },
+    "tables": {
+        "receptionPlan": "Reception Plan",
+        "manageSeating": "Manage tables and guest seating arrangements.",
+        "addTable": "Add Table",
+        "editTable": "Edit Table",
+        "configureTableDetails": "Configure table details and capacity.",
+        "tableName": "Table Name",
+        "tableNamePlaceholder": "e.g., Head Table, Table 1",
+        "shape": "Shape",
+        "circle": "Circle",
+        "square": "Square",
+        "rectangle": "Rectangle",
+        "minCapacity": "Min Capacity",
+        "maxCapacity": "Max Capacity",
+        "unassignedGuests": "Unassigned Guests",
+        "dragToAssign": "Drag guests to tables to assign them.",
+        "allGuestsAssigned": "All confirmed guests have been assigned!",
+        "guests": "Guests",
+        "dropGuestsHere": "Drop guests here",
+        "overCapacity": "Over Capacity!",
+        "underCapacity": "Under Min Capacity",
+        "noTablesYet": "No Tables Yet",
+        "startWithTables": "Start by creating tables for your reception.",
+        "createFirstTable": "Create Your First Table",
+        "confirmDelete": "Are you sure you want to delete this table?"
+    },
     "status": {
         "pending": "Pending",
         "in-progress": "In Progress",
@@ -133,6 +158,7 @@
         "budget": "Budget",
         "guests": "Guest List",
         "suppliers": "Suppliers",
+        "tables": "Tables",
         "days": "Days"
     }
 }

@@ -15,6 +15,7 @@ import { TaskModal } from './TaskModal';
 import { UserManagement } from './UserManagement';
 import { SuppliersView } from '@/components/Common/SuppliersView';
 import { GuestList } from './GuestList';
+import { TablesView } from './TablesView';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,9 +32,11 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function AdminPanel() {
   const { t } = useTranslation();
+  const { role } = useAuth();
   const {
     tasks,
     isLoading,
@@ -49,7 +52,7 @@ export function AdminPanel() {
 
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<
-    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'guests'
+    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'guests' | 'tables'
   >('overview');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in-progress' | 'completed' | string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,6 +73,7 @@ export function AdminPanel() {
       case 'budget': return t('nav.budget');
       case 'suppliers': return t('nav.suppliers');
       case 'guests': return t('nav.guests');
+      case 'tables': return t('nav.tables');
       case 'Friday': return t('days.Friday');
       case 'Saturday': return t('days.Saturday');
       case 'Sunday': return t('days.Sunday');
@@ -164,11 +168,12 @@ export function AdminPanel() {
           setStatusFilter(null);
         }}
         showOverview
+        isAdmin={role === 'admin'}
       />
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-6">
         {/* Action Bar */}
-        {activeTab !== 'cajon-sastre' && activeTab !== 'users' && activeTab !== 'budget' && activeTab !== 'suppliers' && activeTab !== 'guests' && (
+        {activeTab !== 'cajon-sastre' && activeTab !== 'users' && activeTab !== 'budget' && activeTab !== 'suppliers' && activeTab !== 'guests' && activeTab !== 'tables' && (
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
               {statusFilter && (
@@ -227,6 +232,8 @@ export function AdminPanel() {
           <SuppliersView />
         ) : activeTab === 'guests' ? (
           <GuestList />
+        ) : activeTab === 'tables' && role === 'admin' ? (
+          <TablesView />
         ) : activeTab === 'cajon-sastre' ? (
           <IdeasBoard onPromote={(content) => {
             setEditingTask(null); // Ensure new task mode

@@ -113,6 +113,32 @@
         "amountRemaining": "Cantidad restante por pagar",
         "endOfTasks": "Fin de la Cronología"
     },
+    "tables": {
+        "receptionPlan": "Plan de Recepción",
+        "manageSeating": "Gestiona las mesas y la disposición de los invitados.",
+        "addTable": "Añadir Mesa",
+        "editTable": "Editar Mesa",
+        "configureTableDetails": "Configura los detalles y la capacidad de la mesa.",
+        "tableName": "Nombre de la Mesa",
+        "tableNamePlaceholder": "ej., Mesa Presidencial, Mesa 1",
+        "shape": "Forma",
+        "circle": "Círculo",
+        "square": "Cuadrado",
+        "rectangle": "Rectángulo",
+        "minCapacity": "Capacidad Min",
+        "maxCapacity": "Capacidad Max",
+        "unassignedGuests": "Invitados Sin Asignar",
+        "dragToAssign": "Arrastra a los invitados a las mesas para asignarlos.",
+        "allGuestsAssigned": "¡Todos los invitados confirmados han sido asignados!",
+        "guests": "Invitados",
+        "dropGuestsHere": "Suelta invitados aquí",
+        "overCapacity": "¡Capacidad Excedida!",
+        "underCapacity": "Bajo Capacidad Min",
+        "noTablesYet": "Aún No Hay Mesas",
+        "startWithTables": "Empieza creando mesas para tu recepción.",
+        "createFirstTable": "Crea Tu Primera Mesa",
+        "confirmDelete": "¿Estás seguro de que quieres eliminar esta mesa?"
+    },
     "status": {
         "pending": "Pendiente",
         "in-progress": "En Progreso",
@@ -132,6 +158,7 @@
         "budget": "Presupuesto",
         "guests": "Lista de Invitados",
         "suppliers": "Proveedores",
+        "tables": "Mesas",
         "days": "Días"
     }
 }

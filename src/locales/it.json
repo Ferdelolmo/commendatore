@@ -113,6 +113,32 @@
         "amountRemaining": "Importo rimanente da pagare",
         "endOfTasks": "Fine della Cronologia"
     },
+    "tables": {
+        "receptionPlan": "Piano Ricevimento",
+        "manageSeating": "Gestisci i tavoli e la disposizione degli ospiti.",
+        "addTable": "Aggiungi Tavolo",
+        "editTable": "Modifica Tavolo",
+        "configureTableDetails": "Configura i dettagli e la capacità del tavolo.",
+        "tableName": "Nome Tavolo",
+        "tableNamePlaceholder": "es., Tavolo Sposi, Tavolo 1",
+        "shape": "Forma",
+        "circle": "Cerchio",
+        "square": "Quadrato",
+        "rectangle": "Rettangolo",
+        "minCapacity": "Capacità Min",
+        "maxCapacity": "Capacità Max",
+        "unassignedGuests": "Ospiti Non Assegnati",
+        "dragToAssign": "Trascina gli ospiti sui tavoli per assegnarli.",
+        "allGuestsAssigned": "Tutti gli ospiti confermati sono stati assegnati!",
+        "guests": "Ospiti",
+        "dropGuestsHere": "Rilascia qui gli ospiti",
+        "overCapacity": "Capacità Superata!",
+        "underCapacity": "Sotto Capacità Min",
+        "noTablesYet": "Nessun Tavolo Ancora",
+        "startWithTables": "Inizia creando i tavoli per il tuo ricevimento.",
+        "createFirstTable": "Crea il Tuo Primo Tavolo",
+        "confirmDelete": "Sei sicuro di voler eliminare questo tavolo?"
+    },
     "status": {
         "pending": "In Attesa",
         "in-progress": "In Corso",
@@ -132,6 +158,7 @@
         "budget": "Budget",
         "guests": "Lista degli Invitati",
         "suppliers": "Fornitori",
+        "tables": "Tavoli",
         "days": "Giorni"
     }
 }

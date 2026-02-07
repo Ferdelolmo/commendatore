@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { TaskDay } from '@/types';
 import { cn } from '@/lib/utils';
-import { Calendar, LayoutDashboard, Users, Clock, PartyPopper, Sunset, Sun, Archive, PiggyBank, Briefcase, ChevronDown, ListCheck } from 'lucide-react';
+import { Calendar, LayoutDashboard, Users, Clock, PartyPopper, Sunset, Sun, Archive, PiggyBank, Briefcase, ChevronDown, ListCheck, Table } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface NavigationProps {
-  activeTab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'days' | 'guests';
-  onTabChange: (tab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'days' | 'guests') => void;
+  activeTab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'days' | 'guests' | 'tables';
+  onTabChange: (tab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'days' | 'guests' | 'tables') => void;
   showOverview?: boolean;
+  isAdmin?: boolean;
 }
 
 const days: { key: TaskDay; labelKey: string; date: string; icon: any }[] = [
@@ -21,7 +22,7 @@ const days: { key: TaskDay; labelKey: string; date: string; icon: any }[] = [
   { key: 'Sunday', labelKey: 'days.Sunday', date: 'Jun 21', icon: Sun },
 ];
 
-export function Navigation({ activeTab, onTabChange, showOverview = false }: NavigationProps) {
+export function Navigation({ activeTab, onTabChange, showOverview = false, isAdmin = false }: NavigationProps) {
   const { t } = useTranslation();
 
   const isDaySelected = days.some(d => d.key === activeTab);
@@ -34,64 +35,59 @@ export function Navigation({ activeTab, onTabChange, showOverview = false }: Nav
           {showOverview && (
             <button
               onClick={() => onTabChange('overview')}
+              title={t('nav.overview')}
               className={cn(
-                'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap',
+                'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
                 activeTab === 'overview'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               )}
             >
-              <LayoutDashboard className="h-4 w-4" />
-              {t('nav.overview')}
+              <LayoutDashboard className="h-5 w-5" />
             </button>
           )}
 
           <button
             onClick={() => onTabChange('timeline')}
+            title={t('nav.timeline')}
             className={cn(
-              'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap',
+              'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
               activeTab === 'timeline'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
             )}
           >
-            <Clock className="h-4 w-4" />
-            {t('nav.timeline')}
+            <Clock className="h-5 w-5" />
           </button>
 
           <button
             onClick={() => onTabChange('team')}
+            title={t('nav.team')}
             className={cn(
-              'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap',
+              'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
               activeTab === 'team'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
             )}
           >
-            <Users className="h-4 w-4" />
-            {t('nav.team')}
+            <Users className="h-5 w-5" />
           </button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
+                title={isDaySelected && currentDay ? t(currentDay.labelKey) : t('nav.days')}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap outline-none',
+                  'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all outline-none',
                   isDaySelected
                     ? 'border-primary text-primary'
                     : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 )}
               >
                 {isDaySelected && currentDay ? (
-                  <>
-                    <currentDay.icon className="h-4 w-4" />
-                    <span>{t(currentDay.labelKey)}</span>
-                  </>
+                  <currentDay.icon className="h-5 w-5" />
                 ) : (
-                  <>
-                    <Calendar className="h-4 w-4" />
-                    <span>{t('nav.days')}</span>
-                  </>
+                  <Calendar className="h-5 w-5" />
                 )}
                 <ChevronDown className="h-3 w-3 ml-1 opacity-50" />
               </button>
@@ -116,67 +112,82 @@ export function Navigation({ activeTab, onTabChange, showOverview = false }: Nav
 
           <button
             onClick={() => onTabChange('cajon-sastre')}
+            title={t('nav.cajonSastre')}
             className={cn(
-              'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap',
+              'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
               activeTab === 'cajon-sastre'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
             )}
           >
-            <Archive className="h-4 w-4" />
-            {t('nav.cajonSastre')}
+            <Archive className="h-5 w-5" />
           </button>
 
           <button
             onClick={() => onTabChange('calendar')}
+            title={t('nav.calendar')}
             className={cn(
-              'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap',
+              'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
               activeTab === 'calendar'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
             )}
           >
-            <Calendar className="h-4 w-4" />
-            {t('nav.calendar')}
+            <Calendar className="h-5 w-5" />
           </button>
 
           <button
             onClick={() => onTabChange('budget')}
+            title={t('nav.budget')}
             className={cn(
-              'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap',
+              'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
               activeTab === 'budget'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
             )}
           >
-            <PiggyBank className="h-4 w-4" />
-            {t('nav.budget')}
+            <PiggyBank className="h-5 w-5" />
           </button>
 
           <button
             onClick={() => onTabChange('guests')}
+            title={t('nav.guests')}
             className={cn(
-              'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap',
+              'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
               activeTab === 'guests'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
             )}
           >
-            <ListCheck className="h-4 w-4" />
-            {t('nav.guests')}
+            <ListCheck className="h-5 w-5" />
           </button>
+
+          {isAdmin && (
+            <button
+              onClick={() => onTabChange('tables')}
+              title={t('nav.tables')}
+              className={cn(
+                'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
+                activeTab === 'tables'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+              )}
+            >
+              <Table className="h-5 w-5" />
+            </button>
+          )}
 
           <button
             onClick={() => onTabChange('suppliers')}
+            title={t('nav.suppliers')}
             className={cn(
-              'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap',
+              'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
               activeTab === 'suppliers'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
             )}
           >
-            <Briefcase className="h-4 w-4" />
-            {t('nav.suppliers')}
+            <Briefcase className="h-5 w-5" />
           </button>
         </div>
       </div>

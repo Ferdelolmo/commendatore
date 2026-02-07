@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { useGuests } from "@/hooks/useGuests";
 import { Guest } from "@/types";
 import {
@@ -16,14 +17,17 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Pencil, Trash2, Search, Download } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Download, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export function GuestList() {
-    const { guests, isLoading, addGuest, updateGuest, deleteGuest, stats } = useGuests();
+    const { t } = useTranslation();
+    const { guests, isLoading, addGuest, addGuests, updateGuest, deleteGuest, stats } = useGuests();
     const [searchTerm, setSearchTerm] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [importText, setImportText] = useState("");
     const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
     const [formData, setFormData] = useState<Partial<Guest>>({});
 
@@ -57,6 +61,29 @@ export function GuestList() {
                 await addGuest(formData as any);
             }
             setIsModalOpen(false);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    const handleImport = async () => {
+        if (!importText.trim()) return;
+
+        const names = importText.split(/[\n,]+/).map(name => name.trim()).filter(name => name.length > 0);
+
+        if (names.length === 0) return;
+
+        const newGuests = names.map(name => ({
+            name,
+            confirmation_status: "Pending",
+            menu_preference: "Standard",
+            transport_needs: "None",
+            attending_pre_wedding: false,
+        }));
+
+        try {
+            await addGuests(newGuests as any);
+            setImportText("");
+            setIsImportModalOpen(false);
         } catch (error) {
             console.error(error);
         }
@@ -121,7 +148,9 @@ export function GuestList() {
                 <div className="flex items-center gap-2">
                     <Button variant="outline" onClick={exportToCSV}>
                         <Download className="h-4 w-4 mr-2" />
-                        Export CSV
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+                        <Upload className="h-4 w-4 mr-2" />
                     </Button>
                     <Button onClick={() => handleOpenModal()}>
                         <Plus className="h-4 w-4 mr-2" />
@@ -190,6 +219,38 @@ export function GuestList() {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Import Modal */}
+            <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>Bulk Import Guests</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            Paste a list of names below. You can separate names with commas or new lines.
+                            Ideally, copy a column from Excel and paste it here.
+                        </p>
+                        <Textarea
+                            placeholder="John Doe&#10;Jane Smith&#10;Bob Johnson"
+                            className="min-h-[200px]"
+                            value={importText}
+                            onChange={(e) => setImportText(e.target.value)}
+                        />
+                        <div className="flex justify-between text-sm text-muted-foreground">
+                            <span>{importText.split(/[\n,]+/).filter(n => n.trim().length > 0).length} names detected</span>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsImportModalOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleImport} disabled={!importText.trim()}>
+                            Import Guests
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogContent className="max-w-lg">
@@ -300,6 +361,6 @@ export function GuestList() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }
