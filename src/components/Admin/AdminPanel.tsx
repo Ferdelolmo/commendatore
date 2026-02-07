@@ -160,7 +160,10 @@ export function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onUsersClick={() => setActiveTab('users')} />
+      <Header
+        onUsersClick={() => setActiveTab('users')}
+        onCajonSastreClick={() => setActiveTab('cajon-sastre')}
+      />
       <Navigation
         activeTab={activeTab}
         onTabChange={(tab) => {

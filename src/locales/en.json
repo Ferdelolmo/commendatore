@@ -160,5 +160,53 @@
         "suppliers": "Suppliers",
         "tables": "Tables",
         "days": "Days"
+    },
+    "guests": {
+        "title": "Guest List",
+        "description": "Manage your wedding guests, RSVPs, and menu preferences.",
+        "totalGuests": "Total Guests",
+        "confirmed": "Confirmed",
+        "preWedding": "Pre-Wedding",
+        "needTransport": "Need Transport",
+        "searchPlaceholder": "Search guests...",
+        "exportCSV": "Export CSV",
+        "bulkImport": "Bulk Import",
+        "addGuest": "Add Guest",
+        "editGuest": "Edit Guest",
+        "noGuestsFound": "No guests found.",
+        "name": "Name",
+        "status": "Status",
+        "menu": "Menu",
+        "allergies": "Allergies",
+        "preWeddingLabel": "Pre-Wedding",
+        "transport": "Transport",
+        "actions": "Actions",
+        "confirmedAssistance": "Confirmed Assistance",
+        "menuPreference": "Menu Preference",
+        "allergiesPlaceholder": "e.g. Peanuts, Shellfish...",
+        "attendingPreWedding": "Attending Pre-Wedding",
+        "notes": "Notes",
+        "notesPlaceholder": "Table seating requests, etc.",
+        "bulkImportTitle": "Bulk Import Guests",
+        "bulkImportDescription": "Paste a list of names below. You can separate names with commas or new lines. Ideally, copy a column from Excel and paste it here.",
+        "importGuests": "Import Guests",
+        "namesDetected": "{{count}} names detected",
+        "statusOptions": {
+            "Pending": "Pending",
+            "Confirmed": "Confirmed",
+            "Declined": "Declined"
+        },
+        "menuOptions": {
+            "Standard": "Standard",
+            "Vegetarian": "Vegetarian",
+            "Vegan": "Vegan",
+            "Celiac": "Celiac",
+            "Children": "Children",
+            "Other": "Other"
+        },
+        "transportOptions": {
+            "None": "🚗",
+            "Bus": "🚌"
+        }
     }
 }

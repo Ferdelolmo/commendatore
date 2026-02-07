@@ -110,18 +110,7 @@ export function Navigation({ activeTab, onTabChange, showOverview = false, isAdm
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <button
-            onClick={() => onTabChange('cajon-sastre')}
-            title={t('nav.cajonSastre')}
-            className={cn(
-              'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
-              activeTab === 'cajon-sastre'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-            )}
-          >
-            <Archive className="h-5 w-5" />
-          </button>
+
 
           <button
             onClick={() => onTabChange('calendar')}

@@ -1,15 +1,16 @@
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Heart, LogOut, Shield, Users, Clock } from 'lucide-react';
+import { Heart, LogOut, Shield, Users, Clock, Archive } from 'lucide-react';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useState, useEffect } from 'react';
 
 interface HeaderProps {
   onUsersClick?: () => void;
+  onCajonSastreClick?: () => void;
 }
 
-export function Header({ onUsersClick }: HeaderProps) {
+export function Header({ onUsersClick, onCajonSastreClick }: HeaderProps) {
   const { role, logout } = useAuth();
   const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState('');
@@ -68,6 +69,18 @@ export function Header({ onUsersClick }: HeaderProps) {
 
           <LanguageSwitcher />
 
+          {onCajonSastreClick && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onCajonSastreClick}
+              className="text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground rounded-full"
+              title={t('nav.cajonSastre')}
+            >
+              <Archive className="h-5 w-5" />
+            </Button>
+          )}
+
           {role === 'admin' && onUsersClick && (
             <Button
               variant="ghost"
@@ -79,6 +92,8 @@ export function Header({ onUsersClick }: HeaderProps) {
               <Users className="h-5 w-5" />
             </Button>
           )}
+
+
 
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-foreground/10 text-primary-foreground text-sm">
             {role === 'admin' ? (

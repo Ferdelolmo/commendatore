@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Pencil, Trash2, Search, Download, Upload } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Download, Upload, Bus, Car } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -111,25 +111,25 @@ export function GuestList() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card>
                     <CardHeader className="py-4">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Guests</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">{t('guests.totalGuests')}</CardTitle>
                         <div className="text-2xl font-bold">{stats.total}</div>
                     </CardHeader>
                 </Card>
                 <Card>
                     <CardHeader className="py-4">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Confirmed</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">{t('guests.confirmed')}</CardTitle>
                         <div className="text-2xl font-bold text-green-600">{stats.confirmed}</div>
                     </CardHeader>
                 </Card>
                 <Card>
                     <CardHeader className="py-4">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Pre-Wedding</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">{t('guests.preWedding')}</CardTitle>
                         <div className="text-2xl font-bold">{stats.preWedding}</div>
                     </CardHeader>
                 </Card>
                 <Card>
                     <CardHeader className="py-4">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Need Transport</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">{t('guests.needTransport')}</CardTitle>
                         <div className="text-2xl font-bold">{stats.needsTransport}</div>
                     </CardHeader>
                 </Card>
@@ -139,7 +139,7 @@ export function GuestList() {
                 <div className="relative w-full md:w-72">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search guests..."
+                        placeholder={t('guests.searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-8"
@@ -148,13 +148,15 @@ export function GuestList() {
                 <div className="flex items-center gap-2">
                     <Button variant="outline" onClick={exportToCSV}>
                         <Download className="h-4 w-4 mr-2" />
+                        {t('guests.exportCSV')}
                     </Button>
                     <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
                         <Upload className="h-4 w-4 mr-2" />
+                        {t('guests.bulkImport')}
                     </Button>
                     <Button onClick={() => handleOpenModal()}>
                         <Plus className="h-4 w-4 mr-2" />
-                        Add Guest
+                        {t('guests.addGuest')}
                     </Button>
                 </div>
             </div>
@@ -163,20 +165,20 @@ export function GuestList() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Menu</TableHead>
-                            <TableHead>Allergies</TableHead>
-                            <TableHead className="text-center">Pre-Wedding</TableHead>
-                            <TableHead>Transport</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead>{t('guests.name')}</TableHead>
+                            <TableHead>{t('guests.status')}</TableHead>
+                            <TableHead>{t('guests.menu')}</TableHead>
+                            <TableHead>{t('guests.allergies')}</TableHead>
+                            <TableHead className="text-center">{t('guests.preWeddingLabel')}</TableHead>
+                            <TableHead>{t('guests.transport')}</TableHead>
+                            <TableHead className="text-right">{t('guests.actions')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredGuests.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={7} className="h-24 text-center">
-                                    No guests found.
+                                    {t('guests.noGuestsFound')}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -202,7 +204,12 @@ export function GuestList() {
                                             <span className="text-muted-foreground">-</span>
                                         )}
                                     </TableCell>
-                                    <TableCell>{guest.transport_needs}</TableCell>
+                                    <TableCell className="text-2xl">
+                                        {guest.transport_needs === 'Bus'
+                                            ? t('guests.transportOptions.Bus')
+                                            : t('guests.transportOptions.None')
+                                        }
+                                    </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
                                             <Button variant="ghost" size="icon" onClick={() => handleOpenModal(guest)}>
@@ -224,13 +231,10 @@ export function GuestList() {
             <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
                 <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
-                        <DialogTitle>Bulk Import Guests</DialogTitle>
+                        <DialogTitle>{t('guests.bulkImportTitle')}</DialogTitle>
                     </DialogHeader>
                     <div className="py-4 space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                            Paste a list of names below. You can separate names with commas or new lines.
-                            Ideally, copy a column from Excel and paste it here.
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t('guests.bulkImportDescription')}</p>
                         <Textarea
                             placeholder="John Doe&#10;Jane Smith&#10;Bob Johnson"
                             className="min-h-[200px]"
@@ -238,15 +242,15 @@ export function GuestList() {
                             onChange={(e) => setImportText(e.target.value)}
                         />
                         <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>{importText.split(/[\n,]+/).filter(n => n.trim().length > 0).length} names detected</span>
+                            <span>{t('guests.namesDetected', { count: importText.split(/[\n,]+/).filter(n => n.trim().length > 0).length })}</span>
                         </div>
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsImportModalOpen(false)}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button onClick={handleImport} disabled={!importText.trim()}>
-                            Import Guests
+                            {t('guests.importGuests')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -255,11 +259,11 @@ export function GuestList() {
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
-                        <DialogTitle>{editingGuest ? "Edit Guest" : "Add Guest"}</DialogTitle>
+                        <DialogTitle>{editingGuest ? t('guests.editGuest') : t('guests.addGuest')}</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
+                            <Label htmlFor="name">{t('guests.name')}</Label>
                             <Input
                                 id="name"
                                 value={formData.name || ""}
@@ -269,7 +273,7 @@ export function GuestList() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="status">Confirmed Assistance</Label>
+                                <Label htmlFor="status">{t('guests.confirmedAssistance')}</Label>
                                 <Select
                                     value={formData.confirmation_status}
                                     onValueChange={(val: any) => setFormData({ ...formData, confirmation_status: val })}
@@ -278,14 +282,14 @@ export function GuestList() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Pending">Pending</SelectItem>
-                                        <SelectItem value="Confirmed">Confirmed</SelectItem>
-                                        <SelectItem value="Declined">Declined</SelectItem>
+                                        <SelectItem value="Pending">{t('guests.statusOptions.Pending')}</SelectItem>
+                                        <SelectItem value="Confirmed">{t('guests.statusOptions.Confirmed')}</SelectItem>
+                                        <SelectItem value="Declined">{t('guests.statusOptions.Declined')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="menu">Menu Preference</Label>
+                                <Label htmlFor="menu">{t('guests.menuPreference')}</Label>
                                 <Select
                                     value={formData.menu_preference}
                                     onValueChange={(val) => setFormData({ ...formData, menu_preference: val })}
@@ -294,30 +298,30 @@ export function GuestList() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Standard">Standard</SelectItem>
-                                        <SelectItem value="Vegetarian">Vegetarian</SelectItem>
-                                        <SelectItem value="Vegan">Vegan</SelectItem>
-                                        <SelectItem value="Celiac">Celiac</SelectItem>
-                                        <SelectItem value="Children">Children</SelectItem>
-                                        <SelectItem value="Other">Other</SelectItem>
+                                        <SelectItem value="Standard">{t('guests.menuOptions.Standard')}</SelectItem>
+                                        <SelectItem value="Vegetarian">{t('guests.menuOptions.Vegetarian')}</SelectItem>
+                                        <SelectItem value="Vegan">{t('guests.menuOptions.Vegan')}</SelectItem>
+                                        <SelectItem value="Celiac">{t('guests.menuOptions.Celiac')}</SelectItem>
+                                        <SelectItem value="Children">{t('guests.menuOptions.Children')}</SelectItem>
+                                        <SelectItem value="Other">{t('guests.menuOptions.Other')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="allergies">Allergies / Dietary Restrictions</Label>
+                            <Label htmlFor="allergies">{t('guests.allergies')}</Label>
                             <Input
                                 id="allergies"
                                 value={formData.allergies || ""}
                                 onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
-                                placeholder="e.g. Peanuts, Shellfish..."
+                                placeholder={t('guests.allergiesPlaceholder')}
                             />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="transport">Transport</Label>
+                                <Label htmlFor="transport">{t('guests.transport')}</Label>
                                 <Select
                                     value={formData.transport_needs}
                                     onValueChange={(val) => setFormData({ ...formData, transport_needs: val })}
@@ -326,9 +330,8 @@ export function GuestList() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="None">None (Own car)</SelectItem>
-                                        <SelectItem value="Bus">Bus</SelectItem>
-                                        <SelectItem value="Car">Car</SelectItem>
+                                        <SelectItem value="None" className="text-2xl">{t('guests.transportOptions.None')}</SelectItem>
+                                        <SelectItem value="Bus" className="text-2xl">{t('guests.transportOptions.Bus')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -338,26 +341,26 @@ export function GuestList() {
                                     checked={formData.attending_pre_wedding}
                                     onCheckedChange={(checked) => setFormData({ ...formData, attending_pre_wedding: checked as boolean })}
                                 />
-                                <Label htmlFor="prewedding">Attending Pre-Wedding</Label>
+                                <Label htmlFor="prewedding">{t('guests.attendingPreWedding')}</Label>
                             </div>
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="notes">Notes</Label>
+                            <Label htmlFor="notes">{t('guests.notes')}</Label>
                             <Textarea
                                 id="notes"
                                 value={formData.notes || ''}
                                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                placeholder="Table seating requests, etc."
+                                placeholder={t('guests.notesPlaceholder')}
                             />
                         </div>
 
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsModalOpen(false)}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
-                        <Button onClick={handleSave}>Save</Button>
+                        <Button onClick={handleSave}>{t('common.saveChanges')}</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

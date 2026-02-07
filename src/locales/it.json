@@ -160,5 +160,53 @@
         "suppliers": "Fornitori",
         "tables": "Tavoli",
         "days": "Giorni"
+    },
+    "guests": {
+        "title": "Lista degli Invitati",
+        "description": "Gestisci i tuoi invitati al matrimonio, le conferme e le preferenze del menu.",
+        "totalGuests": "Totale Invitati",
+        "confirmed": "Confermati",
+        "preWedding": "Pre-Matrimonio",
+        "needTransport": "Necessitano Trasporto",
+        "searchPlaceholder": "Cerca invitati...",
+        "exportCSV": "Esporta CSV",
+        "bulkImport": "Importazione Massiva",
+        "addGuest": "Aggiungi Invitato",
+        "editGuest": "Modifica Invitato",
+        "noGuestsFound": "Nessun invitato trovato.",
+        "name": "Nome",
+        "status": "Stato",
+        "menu": "Menu",
+        "allergies": "Allergie",
+        "preWeddingLabel": "Pre-Matrimonio",
+        "transport": "Trasporto",
+        "actions": "Azioni",
+        "confirmedAssistance": "Conferma Presenza",
+        "menuPreference": "Preferenza Menu",
+        "allergiesPlaceholder": "es. Arachidi, Crostacei...",
+        "attendingPreWedding": "Partecipa al Pre-Matrimonio",
+        "notes": "Note",
+        "notesPlaceholder": "Richieste disposizione tavoli, ecc.",
+        "bulkImportTitle": "Importazione Massiva Invitati",
+        "bulkImportDescription": "Incolla un elenco di nomi qui sotto. Puoi separare i nomi con virgole o nuove righe. Idealmente, copia una colonna da Excel e incollala qui.",
+        "importGuests": "Importa Invitati",
+        "namesDetected": "{{count}} nomi rilevati",
+        "statusOptions": {
+            "Pending": "In Attesa",
+            "Confirmed": "Confermato",
+            "Declined": "Declinato"
+        },
+        "menuOptions": {
+            "Standard": "Standard",
+            "Vegetarian": "Vegetariano",
+            "Vegan": "Vegano",
+            "Celiac": "Celiaco",
+            "Children": "Bambini",
+            "Other": "Altro"
+        },
+        "transportOptions": {
+            "None": "🚗",
+            "Bus": "🚌"
+        }
     }
 }
