@@ -177,7 +177,7 @@
         "unlinkGuest": "Unlink Guest",
         "selectGuestToLink": "Select a guest to link with {{name}}",
         "searchGuest": "Search guest...",
-        "linkedWith": "Linked with {{count}} other(s)",
+        "linkedWith": " {{count}} other(s)",
         "noGuestsFound": "No guests found.",
         "name": "Name",
         "status": "Status",
@@ -210,6 +210,7 @@
         "transportOptions": {
             "None": "🚗",
             "Bus": "🚌"
-        }
+        },
+        "saveToLink": "Save first to link guests"
     }
 }

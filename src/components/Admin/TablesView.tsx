@@ -169,7 +169,7 @@ function TableModal({ isOpen, onClose, onSave, initialData }: TableModalProps) {
 
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
-                        <Button type="submit">{t('common.save')}</Button>
+                        <Button type="submit">{t('💾')}</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
@@ -192,7 +192,7 @@ export function TablesView() {
         guests: guests.filter(g => g.table_id === table.id)
     }));
 
-    const unassignedGuests = guests.filter(g => !g.table_id && g.confirmation_status === 'Confirmed');
+    const unassignedGuests = guests.filter(g => !g.table_id && g.confirmation_status !== 'Declined');
 
     const handleDragStart = (e: React.DragEvent, guest: Guest) => {
         e.dataTransfer.setData('guestId', guest.id);
@@ -269,12 +269,18 @@ export function TablesView() {
                                 className="p-3 bg-white rounded-lg shadow-sm border border-slate-200 cursor-move hover:shadow-md transition-all flex items-center justify-between group"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${guest.confirmation_status === 'Confirmed'
+                                        ? 'bg-primary/10 text-primary'
+                                        : 'bg-amber-100 text-amber-700'
+                                        }`}>
                                         {guest.name.charAt(0)}
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-sm font-medium">{guest.name}</span>
-                                        {guest.plus_one && <span className="text-[10px] text-muted-foreground">+1</span>}
+                                        <div className="flex items-center gap-2">
+                                            {guest.plus_one && <span className="text-[10px] text-muted-foreground">+1</span>}
+                                            {guest.confirmation_status === 'Pending' && <span className="text-[10px] text-amber-600 bg-amber-50 px-1 rounded">Pending</span>}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">

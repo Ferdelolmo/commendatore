@@ -69,16 +69,21 @@ export function GuestList() {
         setIsModalOpen(true);
     };
 
-    const handleSave = async () => {
+    const handleSave = async (shouldClose = true) => {
         try {
             if (!formData.name) return;
 
+            let savedGuest: Guest;
             if (editingGuest) {
-                await updateGuest(editingGuest.id, formData);
+                savedGuest = await updateGuest(editingGuest.id, formData) as Guest;
             } else {
-                await addGuest(formData as any);
+                savedGuest = await addGuest(formData as any) as Guest;
             }
-            setIsModalOpen(false);
+
+            if (shouldClose) {
+                setIsModalOpen(false);
+            }
+            return savedGuest;
         } catch (error) {
             console.error(error);
         }
@@ -210,11 +215,18 @@ export function GuestList() {
                             filteredGuests.map((guest) => (
                                 <TableRow key={guest.id}>
                                     <TableCell className="w-[25%] font-medium">
-                                        <div className="flex items-center gap-2">
-                                            {guest.name}
+                                        <div className="flex flex-col">
+                                            <div className="flex items-center gap-2">
+                                                {guest.name}
+                                                {guest.group_id && (
+                                                    <div className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600" title={t('guests.linkedWith', { count: getLinkedGuests(guest).length })}>
+                                                        <LinkIcon className="w-3 h-3" />
+                                                    </div>
+                                                )}
+                                            </div>
                                             {guest.group_id && (
-                                                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600" title={t('guests.linkedWith', { count: getLinkedGuests(guest).length })}>
-                                                    <LinkIcon className="w-3 h-3" />
+                                                <div className="text-xs text-muted-foreground mt-0.5 ml-1">
+                                                    + {getLinkedGuests(guest).map(g => g.name).join(", ")}
                                                 </div>
                                             )}
                                         </div>
@@ -388,6 +400,40 @@ export function GuestList() {
                             </div>
                         </div>
 
+                        {/* Link Guest Section inside Modal (Add & Edit) */}
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={async () => {
+                                    if (editingGuest) {
+                                        setLinkingGuest(editingGuest);
+                                        setLinkSearchTerm("");
+                                    } else {
+                                        // If adding new guest, save first then link
+                                        const newGuest = await handleSave(false);
+                                        if (newGuest) {
+                                            setEditingGuest(newGuest);
+                                            setLinkingGuest(newGuest);
+                                            setLinkSearchTerm("");
+                                        }
+                                    }
+                                }}
+                                title={t('guests.linkGuest')}
+                                type="button"
+                            >
+                                <LinkIcon className="h-4 w-4" />
+                            </Button>
+                            {editingGuest?.group_id && (
+                                <div className="text-sm text-muted-foreground">
+                                    + {getLinkedGuests(editingGuest).map(g => g.name).join(", ")}
+                                </div>
+                            )}
+                            {!editingGuest && (
+                                <span className="text-xs text-muted-foreground">{t('guests.saveToLink')}</span>
+                            )}
+                        </div>
+
                         <div className="grid gap-2">
                             <Label htmlFor="notes">{t('guests.notes')}</Label>
                             <Textarea
@@ -403,7 +449,7 @@ export function GuestList() {
                         <Button variant="outline" onClick={() => setIsModalOpen(false)}>
                             {t('common.cancel')}
                         </Button>
-                        <Button onClick={handleSave}>{t('common.saveChanges')}</Button>
+                        <Button onClick={() => handleSave(true)}>{t('common.saveChanges')}</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
