@@ -86,6 +86,7 @@ export interface Guest {
   notes?: string;
   table_id?: string;
   plus_one?: boolean;
+  group_id?: string;
 }
 
 export interface Table {

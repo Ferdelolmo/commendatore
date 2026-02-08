@@ -17,19 +17,37 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Pencil, Trash2, Search, Download, Upload, Bus, Car } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Download, Upload, Bus, Car, Link as LinkIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export function GuestList() {
     const { t } = useTranslation();
-    const { guests, isLoading, addGuest, addGuests, updateGuest, deleteGuest, stats } = useGuests();
+    const { guests, isLoading, addGuest, addGuests, updateGuest, deleteGuest, linkGuests, stats } = useGuests();
     const [searchTerm, setSearchTerm] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [linkingGuest, setLinkingGuest] = useState<Guest | null>(null);
+    const [linkSearchTerm, setLinkSearchTerm] = useState("");
     const [importText, setImportText] = useState("");
     const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
     const [formData, setFormData] = useState<Partial<Guest>>({});
+
+    const getLinkedGuests = (guest: Guest) => {
+        if (!guest.group_id) return [];
+        return guests.filter(g => g.group_id === guest.group_id && g.id !== guest.id);
+    };
+
+    const handleLink = async (targetGuestId: string) => {
+        if (!linkingGuest) return;
+        try {
+            await linkGuests(linkingGuest.id, targetGuestId);
+            setLinkingGuest(null);
+            setLinkSearchTerm("");
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const filteredGuests = guests.filter((guest) =>
         guest.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -191,7 +209,16 @@ export function GuestList() {
                         ) : (
                             filteredGuests.map((guest) => (
                                 <TableRow key={guest.id}>
-                                    <TableCell className="w-[25%] font-medium">{guest.name}</TableCell>
+                                    <TableCell className="w-[25%] font-medium">
+                                        <div className="flex items-center gap-2">
+                                            {guest.name}
+                                            {guest.group_id && (
+                                                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600" title={t('guests.linkedWith', { count: getLinkedGuests(guest).length })}>
+                                                    <LinkIcon className="w-3 h-3" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </TableCell>
                                     <TableCell className="w-[15%]">
                                         <Badge variant={
                                             guest.confirmation_status === 'Confirmed' ? 'default' :
@@ -229,6 +256,9 @@ export function GuestList() {
                                         <div className="flex justify-end gap-2">
                                             <Button variant="ghost" size="icon" onClick={() => handleOpenModal(guest)}>
                                                 <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50" onClick={() => { setLinkingGuest(guest); setLinkSearchTerm(""); }}>
+                                                <LinkIcon className="h-4 w-4" />
                                             </Button>
                                             <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => deleteGuest(guest.id)}>
                                                 <Trash2 className="h-4 w-4" />
@@ -375,6 +405,55 @@ export function GuestList() {
                         </Button>
                         <Button onClick={handleSave}>{t('common.saveChanges')}</Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Link Guest Modal */}
+            <Dialog open={!!linkingGuest} onOpenChange={(open) => !open && setLinkingGuest(null)}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>{t('guests.linkGuest')}</DialogTitle>
+                        <div className="text-sm text-muted-foreground">
+                            {t('guests.selectGuestToLink', { name: linkingGuest?.name })}
+                        </div>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="relative">
+                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder={t('guests.searchGuest')}
+                                value={linkSearchTerm}
+                                onChange={(e) => setLinkSearchTerm(e.target.value)}
+                                className="pl-8"
+                                autoFocus
+                            />
+                        </div>
+                        <div className="h-[300px] overflow-y-auto space-y-1 border rounded-md p-2">
+                            {guests
+                                .filter(g => g.id !== linkingGuest?.id && g.name.toLowerCase().includes(linkSearchTerm.toLowerCase()))
+                                .map(g => {
+                                    const isAlreadyLinked = linkingGuest?.group_id && g.group_id === linkingGuest.group_id;
+                                    return (
+                                        <div
+                                            key={g.id}
+                                            className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${isAlreadyLinked ? 'bg-blue-50 opacity-50 cursor-default' : 'hover:bg-muted'}`}
+                                            onClick={() => !isAlreadyLinked && handleLink(g.id)}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span>{g.name}</span>
+                                                {g.group_id && !isAlreadyLinked && <LinkIcon className="w-3 h-3 text-muted-foreground" />}
+                                            </div>
+                                            {isAlreadyLinked && <Badge variant="secondary" className="text-[10px]">Linked</Badge>}
+                                        </div>
+                                    );
+                                })}
+                            {guests.filter(g => g.id !== linkingGuest?.id && g.name.toLowerCase().includes(linkSearchTerm.toLowerCase())).length === 0 && (
+                                <div className="text-center py-8 text-muted-foreground text-sm">
+                                    {t('guests.noGuestsFound')}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div >

@@ -134,17 +134,28 @@ export function useTables() {
 
     const assignGuestToTable = async (guestId: string, tableId: string | null) => {
         try {
-            const { error } = await supabase
+            // Check if guest has a group
+            const { data: guestData } = await supabase
                 .from('guests')
-                .update({ table_id: tableId })
-                .eq('id', guestId);
+                .select('group_id')
+                .eq('id', guestId)
+                .single();
+
+            let query = supabase
+                .from('guests')
+                .update({ table_id: tableId });
+
+            if (guestData?.group_id) {
+                // If in a group, update everyone in that group
+                query = query.eq('group_id', guestData.group_id);
+            } else {
+                // Otherwise just update the single guest
+                query = query.eq('id', guestId);
+            }
+
+            const { error } = await query;
 
             if (error) throw error;
-
-            // We need to update local state to reflect the change
-            // This is complex because we have tables state here, but guests state in useGuests.
-            // Ideally this state should be managed together or refetched.
-            // For now, we will just return success and let the component handle refresh.
 
             fetchTables();
             return true;
