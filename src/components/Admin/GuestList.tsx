@@ -161,19 +161,26 @@ export function GuestList() {
                 </div>
             </div>
 
-            <div className="rounded-md border bg-card">
-                <Table>
+            {/* Separate Header Table */}
+            <div className="rounded-t-md border border-b-0 bg-secondary/20">
+                <Table className="table-fixed w-full">
                     <TableHeader>
                         <TableRow>
-                            <TableHead>{t('guests.name')}</TableHead>
-                            <TableHead>{t('guests.status')}</TableHead>
-                            <TableHead>{t('guests.menu')}</TableHead>
-                            <TableHead>{t('guests.allergies')}</TableHead>
-                            <TableHead className="text-center">{t('guests.preWeddingLabel')}</TableHead>
-                            <TableHead>{t('guests.transport')}</TableHead>
-                            <TableHead className="text-right">{t('guests.actions')}</TableHead>
+                            <TableHead className="w-[25%]">{t('guests.name')}</TableHead>
+                            <TableHead className="w-[15%]">{t('guests.status')}</TableHead>
+                            <TableHead className="w-[15%]">{t('guests.menu')}</TableHead>
+                            <TableHead className="w-[15%]">{t('guests.allergies')}</TableHead>
+                            <TableHead className="w-[10%] text-center">{t('guests.preWeddingLabel')}</TableHead>
+                            <TableHead className="w-[10%] text-center">{t('guests.transport')}</TableHead>
+                            <TableHead className="w-[10%] text-right">{t('guests.actions')}</TableHead>
                         </TableRow>
                     </TableHeader>
+                </Table>
+            </div>
+
+            {/* Scrollable Body Table */}
+            <div className="rounded-b-md border bg-card h-[calc(100vh-22rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+                <Table className="table-fixed w-full">
                     <TableBody>
                         {filteredGuests.length === 0 ? (
                             <TableRow>
@@ -184,8 +191,8 @@ export function GuestList() {
                         ) : (
                             filteredGuests.map((guest) => (
                                 <TableRow key={guest.id}>
-                                    <TableCell className="font-medium">{guest.name}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="w-[25%] font-medium">{guest.name}</TableCell>
+                                    <TableCell className="w-[15%]">
                                         <Badge variant={
                                             guest.confirmation_status === 'Confirmed' ? 'default' :
                                                 guest.confirmation_status === 'Declined' ? 'destructive' : 'secondary'
@@ -193,24 +200,32 @@ export function GuestList() {
                                             {t(`guests.statusOptions.${guest.confirmation_status}`)}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>{t(`guests.menuOptions.${guest.menu_preference}`)}</TableCell>
-                                    <TableCell className="max-w-[150px] truncate" title={guest.allergies || ''}>
+                                    <TableCell className="w-[15%]">
+                                        {/* Fallback for legacy database values */}
+                                        {['Standard', 'Celiac', 'Other'].includes(guest.menu_preference)
+                                            ? t('guests.menuOptions.Meat')
+                                            : guest.menu_preference === 'Vegetarian'
+                                                ? t('guests.menuOptions.Vegan')
+                                                : t(`guests.menuOptions.${guest.menu_preference}`)
+                                        }
+                                    </TableCell>
+                                    <TableCell className="w-[15%] max-w-[150px] truncate" title={guest.allergies || ''}>
                                         {guest.allergies || '-'}
                                     </TableCell>
-                                    <TableCell className="text-center">
+                                    <TableCell className="w-[10%] text-center">
                                         {guest.attending_pre_wedding ? (
                                             <span className="text-green-600 font-bold">✓</span>
                                         ) : (
                                             <span className="text-muted-foreground">-</span>
                                         )}
                                     </TableCell>
-                                    <TableCell className="text-2xl">
+                                    <TableCell className="w-[10%] text-2xl text-center">
                                         {guest.transport_needs === 'Bus'
                                             ? t('guests.transportOptions.Bus')
                                             : t('guests.transportOptions.None')
                                         }
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="w-[10%] text-right">
                                         <div className="flex justify-end gap-2">
                                             <Button variant="ghost" size="icon" onClick={() => handleOpenModal(guest)}>
                                                 <Pencil className="h-4 w-4" />
