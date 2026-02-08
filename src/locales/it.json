@@ -169,8 +169,8 @@
         "preWedding": "Pre-Matrimonio",
         "needTransport": "Necessitano Trasporto",
         "searchPlaceholder": "Cerca invitati...",
-        "exportCSV": "Esporta CSV",
-        "bulkImport": "Importazione Massiva",
+        "exportCSV": "",
+        "bulkImport": "",
         "addGuest": "Aggiungi Invitato",
         "editGuest": "Modifica Invitato",
         "noGuestsFound": "Nessun invitato trovato.",
@@ -197,12 +197,10 @@
             "Declined": "Declinato"
         },
         "menuOptions": {
-            "Standard": "Standard",
-            "Vegetarian": "Vegetariano",
+            "Meat": "Carne",
+            "Fish": "Pesce",
             "Vegan": "Vegano",
-            "Celiac": "Celiaco",
-            "Children": "Bambini",
-            "Other": "Altro"
+            "Children": "Infantile"
         },
         "transportOptions": {
             "None": "🚗",

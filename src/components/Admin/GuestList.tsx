@@ -43,7 +43,7 @@ export function GuestList() {
             setEditingGuest(null);
             setFormData({
                 confirmation_status: "Pending",
-                menu_preference: "Standard",
+                menu_preference: "Meat",
                 transport_needs: "None",
                 attending_pre_wedding: false,
             });
@@ -75,7 +75,7 @@ export function GuestList() {
         const newGuests = names.map(name => ({
             name,
             confirmation_status: "Pending",
-            menu_preference: "Standard",
+            menu_preference: "Meat",
             transport_needs: "None",
             attending_pre_wedding: false,
         }));
@@ -190,10 +190,10 @@ export function GuestList() {
                                             guest.confirmation_status === 'Confirmed' ? 'default' :
                                                 guest.confirmation_status === 'Declined' ? 'destructive' : 'secondary'
                                         }>
-                                            {guest.confirmation_status}
+                                            {t(`guests.statusOptions.${guest.confirmation_status}`)}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>{guest.menu_preference}</TableCell>
+                                    <TableCell>{t(`guests.menuOptions.${guest.menu_preference}`)}</TableCell>
                                     <TableCell className="max-w-[150px] truncate" title={guest.allergies || ''}>
                                         {guest.allergies || '-'}
                                     </TableCell>
@@ -298,12 +298,10 @@ export function GuestList() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Standard">{t('guests.menuOptions.Standard')}</SelectItem>
-                                        <SelectItem value="Vegetarian">{t('guests.menuOptions.Vegetarian')}</SelectItem>
+                                        <SelectItem value="Meat">{t('guests.menuOptions.Meat')}</SelectItem>
+                                        <SelectItem value="Fish">{t('guests.menuOptions.Fish')}</SelectItem>
                                         <SelectItem value="Vegan">{t('guests.menuOptions.Vegan')}</SelectItem>
-                                        <SelectItem value="Celiac">{t('guests.menuOptions.Celiac')}</SelectItem>
                                         <SelectItem value="Children">{t('guests.menuOptions.Children')}</SelectItem>
-                                        <SelectItem value="Other">{t('guests.menuOptions.Other')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

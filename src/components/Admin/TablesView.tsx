@@ -241,9 +241,9 @@ export function TablesView() {
     }
 
     return (
-        <div className="flex h-[calc(100vh-10rem)] gap-6">
+        <div className="flex flex-col lg:flex-row h-[calc(100vh-10rem)] gap-4 lg:gap-6">
             {/* Sidebar - Unassigned Guests */}
-            <Card className="w-80 flex flex-col h-full bg-slate-50 border-none shadow-md">
+            <Card className="w-full lg:w-80 h-48 lg:h-full flex flex-col bg-slate-50 border-none shadow-md shrink-0 order-first">
                 <CardHeader className="pb-3 bg-white rounded-t-lg border-b">
                     <CardTitle className="text-lg flex justify-between items-center">
                         {t('tables.unassignedGuests')}

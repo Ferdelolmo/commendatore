@@ -169,8 +169,8 @@
         "preWedding": "Pre-Wedding",
         "needTransport": "Need Transport",
         "searchPlaceholder": "Search guests...",
-        "exportCSV": "Export CSV",
-        "bulkImport": "Bulk Import",
+        "exportCSV": "",
+        "bulkImport": "",
         "addGuest": "Add Guest",
         "editGuest": "Edit Guest",
         "noGuestsFound": "No guests found.",
@@ -197,12 +197,10 @@
             "Declined": "Declined"
         },
         "menuOptions": {
-            "Standard": "Standard",
-            "Vegetarian": "Vegetarian",
+            "Meat": "Meat",
+            "Fish": "Fish",
             "Vegan": "Vegan",
-            "Celiac": "Celiac",
-            "Children": "Children",
-            "Other": "Other"
+            "Children": "Children"
         },
         "transportOptions": {
             "None": "🚗",
