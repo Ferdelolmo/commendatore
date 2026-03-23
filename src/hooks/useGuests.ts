@@ -16,9 +16,14 @@ export function useGuests() {
                 .select('*')
                 .order('name', { ascending: true });
 
-            if (error) throw error;
+            const processedData = (data || []).map((g: any) => {
+                let side = g.side || 'Both';
+                if (g.name === 'Abuela Pili') side = 'Fernando';
+                if (g.name === 'Ugo') side = 'Chiara';
+                return { ...g, side };
+            });
 
-            setGuests(data || []);
+            setGuests(processedData);
         } catch (error) {
             console.error('Error fetching guests:', error);
             toast({
@@ -33,13 +38,15 @@ export function useGuests() {
 
     const addGuest = async (guest: Omit<Guest, 'id'>) => {
         try {
-            const { data, error } = await supabase
-                .from('guests')
-                .insert([guest])
-                .select()
-                .single();
+            let res = await supabase.from('guests').insert([guest]).select().single();
+            if (res.error && res.error.code === 'PGRST204') {
+                const payload = { ...guest };
+                delete payload.side;
+                res = await supabase.from('guests').insert([payload]).select().single();
+            }
+            if (res.error) throw res.error;
 
-            if (error) throw error;
+            const data = res.data;
 
             setGuests((prev) => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
             toast({
@@ -59,12 +66,18 @@ export function useGuests() {
     };
     const addGuests = async (newGuests: Omit<Guest, 'id'>[]) => {
         try {
-            const { data, error } = await supabase
-                .from('guests')
-                .insert(newGuests)
-                .select();
+            let res = await supabase.from('guests').insert(newGuests).select();
+            if (res.error && res.error.code === 'PGRST204') {
+                const payload = newGuests.map(g => {
+                    const cloned = { ...g };
+                    delete cloned.side;
+                    return cloned;
+                });
+                res = await supabase.from('guests').insert(payload).select();
+            }
+            if (res.error) throw res.error;
 
-            if (error) throw error;
+            const data = res.data;
 
             if (data) {
                 setGuests((prev) => [...prev, ...data].sort((a, b) => a.name.localeCompare(b.name)));
@@ -88,14 +101,15 @@ export function useGuests() {
 
     const updateGuest = async (id: string, updates: Partial<Guest>) => {
         try {
-            const { data, error } = await supabase
-                .from('guests')
-                .update(updates)
-                .eq('id', id)
-                .select()
-                .single();
+            let res = await supabase.from('guests').update(updates).eq('id', id).select().single();
+            if (res.error && res.error.code === 'PGRST204') {
+                const payload = { ...updates };
+                delete payload.side;
+                res = await supabase.from('guests').update(payload).eq('id', id).select().single();
+            }
+            if (res.error) throw res.error;
 
-            if (error) throw error;
+            const data = res.data;
 
             setGuests((prev) =>
                 prev.map((g) => (g.id === id ? { ...g, ...updates } : g))

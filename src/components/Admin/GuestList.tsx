@@ -64,6 +64,7 @@ export function GuestList() {
                 menu_preference: "Meat",
                 transport_needs: "None",
                 attending_pre_wedding: false,
+                side: "Both",
             });
         }
         setIsModalOpen(true);
@@ -101,6 +102,7 @@ export function GuestList() {
             menu_preference: "Meat",
             transport_needs: "None",
             attending_pre_wedding: false,
+            side: "Both",
         }));
 
         try {
@@ -193,6 +195,7 @@ export function GuestList() {
                             <TableHead className="w-[15%]">{t('guests.status')}</TableHead>
                             <TableHead className="w-[15%]">{t('guests.menu')}</TableHead>
                             <TableHead className="w-[15%]">{t('guests.allergies')}</TableHead>
+                            <TableHead className="w-[10%] text-center">{t('guests.sideLabel', 'Side')}</TableHead>
                             <TableHead className="w-[10%] text-center">{t('guests.preWeddingLabel')}</TableHead>
                             <TableHead className="w-[10%] text-center">{t('guests.transport')}</TableHead>
                             <TableHead className="w-[10%] text-right">{t('guests.actions')}</TableHead>
@@ -250,6 +253,16 @@ export function GuestList() {
                                     </TableCell>
                                     <TableCell className="w-[15%] max-w-[150px] truncate" title={guest.allergies || ''}>
                                         {guest.allergies || '-'}
+                                    </TableCell>
+                                    <TableCell className="w-[10%] text-center">
+                                        {guest.side === 'Fernando' && <img src="https://i.imgur.com/bqNCQ7n.jpeg" alt="Fer" className="w-8 h-8 rounded-full inline object-cover shadow-sm mx-auto" />}
+                                        {guest.side === 'Chiara' && <img src="https://i.imgur.com/MtxJGhX.jpeg" alt="Chiara" className="w-8 h-8 rounded-full inline object-cover shadow-sm mx-auto" />}
+                                        {(guest.side === 'Both' || !guest.side) && (
+                                            <div className="flex justify-center -space-x-2">
+                                               <img src="https://i.imgur.com/bqNCQ7n.jpeg" alt="Fer" className="w-8 h-8 rounded-full border-2 border-background object-cover shadow-sm" />
+                                               <img src="https://i.imgur.com/MtxJGhX.jpeg" alt="Chiara" className="w-8 h-8 rounded-full border-2 border-background object-cover shadow-sm" />
+                                            </div>
+                                        )}
                                     </TableCell>
                                     <TableCell className="w-[10%] text-center">
                                         {guest.attending_pre_wedding ? (
@@ -376,6 +389,22 @@ export function GuestList() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
+                                <Label htmlFor="side">{t('guests.sideLabel', 'Side')}</Label>
+                                <Select
+                                    value={formData.side || 'Both'}
+                                    onValueChange={(val: any) => setFormData({ ...formData, side: val })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Fernando">{t('guests.sideOptions.Fernando', 'Fernando')}</SelectItem>
+                                        <SelectItem value="Chiara">{t('guests.sideOptions.Chiara', 'Chiara')}</SelectItem>
+                                        <SelectItem value="Both">{t('guests.sideOptions.Both', 'Both')}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-2">
                                 <Label htmlFor="transport">{t('guests.transport')}</Label>
                                 <Select
                                     value={formData.transport_needs}
@@ -390,14 +419,15 @@ export function GuestList() {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="flex items-center gap-2 pt-8">
-                                <Checkbox
-                                    id="prewedding"
-                                    checked={formData.attending_pre_wedding}
-                                    onCheckedChange={(checked) => setFormData({ ...formData, attending_pre_wedding: checked as boolean })}
-                                />
-                                <Label htmlFor="prewedding">{t('guests.attendingPreWedding')}</Label>
-                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-2 pb-2">
+                            <Checkbox
+                                id="prewedding"
+                                checked={formData.attending_pre_wedding}
+                                onCheckedChange={(checked) => setFormData({ ...formData, attending_pre_wedding: checked as boolean })}
+                            />
+                            <Label htmlFor="prewedding">{t('guests.attendingPreWedding')}</Label>
                         </div>
 
                         {/* Link Guest Section inside Modal (Add & Edit) */}

@@ -87,6 +87,7 @@ export interface Guest {
   table_id?: string;
   plus_one?: boolean;
   group_id?: string;
+  side?: 'Fernando' | 'Chiara' | 'Both';
 }
 
 export interface Table {
