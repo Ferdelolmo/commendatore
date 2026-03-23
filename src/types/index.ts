@@ -100,3 +100,12 @@ export interface Table {
   position?: { x: number; y: number };
   guests?: Guest[];
 }
+
+export interface Gift {
+  id: string;
+  amount: number;
+  notes?: string;
+  guest_id?: string;
+  group_id?: string;
+  created_at?: string;
+}

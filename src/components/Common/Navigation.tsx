@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { TaskDay } from '@/types';
 import { cn } from '@/lib/utils';
-import { Calendar, LayoutDashboard, Users, Clock, PartyPopper, Sunset, Sun, Archive, PiggyBank, Briefcase, ChevronDown, ListCheck, Table } from 'lucide-react';
+import { Calendar, LayoutDashboard, Users, Clock, PartyPopper, Sunset, Sun, Archive, PiggyBank, Briefcase, ChevronDown, ListCheck, Table, Gift } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface NavigationProps {
-  activeTab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'days' | 'guests' | 'tables';
-  onTabChange: (tab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'days' | 'guests' | 'tables') => void;
+  activeTab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'days' | 'guests' | 'tables' | 'gifts';
+  onTabChange: (tab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'days' | 'guests' | 'tables' | 'gifts') => void;
   showOverview?: boolean;
   isAdmin?: boolean;
 }
@@ -154,7 +154,7 @@ export function Navigation({ activeTab, onTabChange, showOverview = false, isAdm
           {isAdmin && (
             <button
               onClick={() => onTabChange('tables')}
-              title={t('nav.tables')}
+              title={t('nav.tables', 'Tables')}
               className={cn(
                 'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
                 activeTab === 'tables'
@@ -163,6 +163,21 @@ export function Navigation({ activeTab, onTabChange, showOverview = false, isAdm
               )}
             >
               <Table className="h-5 w-5" />
+            </button>
+          )}
+
+          {isAdmin && (
+            <button
+              onClick={() => onTabChange('gifts')}
+              title={t('nav.gifts', 'Gifts')}
+              className={cn(
+                'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
+                activeTab === 'gifts'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+              )}
+            >
+              <Gift className="h-5 w-5" />
             </button>
           )}
 
