@@ -115,9 +115,9 @@ export function GuestList() {
     };
 
     const exportToCSV = () => {
-        const headers = ["Name,Status,Menu,Allergies,Pre-Wedding,Transport,Notes"];
+        const headers = ["Name,Status,Menu,Allergies,Side,Pre-Wedding,Transport,Notes"];
         const rows = guests.map(g =>
-            `"${g.name}","${g.confirmation_status}","${g.menu_preference}","${g.allergies || ''}","${g.attending_pre_wedding ? 'Yes' : 'No'}","${g.transport_needs}","${g.notes || ''}"`
+            `"${g.name}","${g.confirmation_status}","${g.menu_preference}","${g.allergies || ''}","${g.side || 'Both'}","${g.attending_pre_wedding ? 'Yes' : 'No'}","${g.transport_needs}","${g.notes || ''}"`
         );
         const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].join("\n");
         const encodedUri = encodeURI(csvContent);
