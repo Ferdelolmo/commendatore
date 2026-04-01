@@ -10,3 +10,6 @@ dist/
 
 # Security
 supabase/migrations/
+
+# Nested git repositories
+commendatore/
