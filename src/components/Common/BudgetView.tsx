@@ -11,10 +11,14 @@ import {
     Save,
     Trash2,
     Plus,
-    RefreshCw
+    RefreshCw,
+    Minus,
+    Gift as GiftIcon,
+    TrendingDown
 } from 'lucide-react';
 import { useBudget } from '@/hooks/useBudget';
 import { useGuests } from '@/hooks/useGuests';
+import { useGifts } from '@/hooks/useGifts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
 
@@ -34,6 +38,7 @@ export function BudgetView() {
         deletePaymentItem
     } = useBudget();
     const { guests } = useGuests();
+    const { totalAmount: totalGifts } = useGifts();
 
     const [isEditing, setIsEditing] = useState(false);
 
@@ -76,12 +81,6 @@ export function BudgetView() {
                     <h2 className="text-2xl font-serif font-semibold text-foreground">{t('common.budgetOverview')}</h2>
                     <p className="text-muted-foreground">{t('common.trackExpenses')}</p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={refreshBudget} disabled={isSyncing}>
-                        <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                        {t('common.refresh', { defaultValue: 'Refresh' })}
-                    </Button>
-                </div>
             </div>
 
             {/* Stats Cards */}
@@ -103,12 +102,16 @@ export function BudgetView() {
                             {(totalBudgetWithGuardrail > 0 && (distribution.chiaraPct > 0 || distribution.fernandoPct > 0)) ? (
                                 <div className="flex gap-6 mt-2 md:mt-0">
                                     <div className="flex flex-col items-end">
-                                        <span className="text-sm text-muted-foreground">Chiara ({Math.round(distribution.chiaraPct * 100)}%)</span>
-                                        <span className="text-lg font-semibold text-foreground">€{(totalBudgetWithGuardrail * distribution.chiaraPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                        <span className="text-sm text-muted-foreground">Chiara</span>
+                                        <span className={`text-lg font-bold ${((totalBudgetWithGuardrail - totalGifts) * distribution.chiaraPct) > 0 ? 'text-orange-500' : 'text-green-600'}`}>
+                                            €{((totalBudgetWithGuardrail - totalGifts) * distribution.chiaraPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                        </span>
                                     </div>
                                     <div className="flex flex-col items-end">
-                                        <span className="text-sm text-muted-foreground">Fernando ({Math.round(distribution.fernandoPct * 100)}%)</span>
-                                        <span className="text-lg font-semibold text-foreground">€{(totalBudgetWithGuardrail * distribution.fernandoPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                        <span className="text-sm text-muted-foreground">Fernando</span>
+                                        <span className={`text-lg font-bold ${((totalBudgetWithGuardrail - totalGifts) * distribution.fernandoPct) > 0 ? 'text-orange-500' : 'text-green-600'}`}>
+                                            €{((totalBudgetWithGuardrail - totalGifts) * distribution.fernandoPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                        </span>
                                     </div>
                                 </div>
                             ) : null}
