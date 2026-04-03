@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 import { useBudget } from '@/hooks/useBudget';
+import { useGuests } from '@/hooks/useGuests';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
 
@@ -32,11 +33,37 @@ export function BudgetView() {
         updatePaymentItem,
         deletePaymentItem
     } = useBudget();
+    const { guests } = useGuests();
 
     const [isEditing, setIsEditing] = useState(false);
 
     const totalBudget = budgetItems.reduce((acc, item) => acc + item.amount, 0);
     const totalBudgetWithGuardrail = totalBudget * 1.1;
+
+    const distribution = useMemo(() => {
+        let chiaraCount = 0;
+        let fernandoCount = 0;
+        
+        guests.forEach(guest => {
+            const side = guest.side?.toLowerCase();
+            if (side === 'chiara') {
+                chiaraCount += 1;
+            } else if (side === 'fernando') {
+                fernandoCount += 1;
+            } else if (side === 'both') {
+                chiaraCount += 0.5;
+                fernandoCount += 0.5;
+            }
+        });
+        
+        const totalCount = chiaraCount + fernandoCount;
+        if (totalCount === 0) return { chiaraPct: 0, fernandoPct: 0 };
+        
+        return {
+            chiaraPct: chiaraCount / totalCount,
+            fernandoPct: fernandoCount / totalCount
+        };
+    }, [guests]);
 
     if (isLoading && budgetItems.length === 0) {
         return <div className="p-8 text-center text-muted-foreground animate-pulse">{t('common.loading')}</div>;
@@ -68,8 +95,24 @@ export function BudgetView() {
                         <Euro className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">€{totalBudgetWithGuardrail.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
-                        <p className="text-xs text-muted-foreground">{t('common.totalProjectedCost')}</p>
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <div className="text-2xl font-bold">€{totalBudgetWithGuardrail.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                                <p className="text-xs text-muted-foreground">{t('common.totalProjectedCost')}</p>
+                            </div>
+                            {(totalBudgetWithGuardrail > 0 && (distribution.chiaraPct > 0 || distribution.fernandoPct > 0)) ? (
+                                <div className="flex gap-6 mt-2 md:mt-0">
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-sm text-muted-foreground">Chiara ({Math.round(distribution.chiaraPct * 100)}%)</span>
+                                        <span className="text-lg font-semibold text-foreground">€{(totalBudgetWithGuardrail * distribution.chiaraPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-sm text-muted-foreground">Fernando ({Math.round(distribution.fernandoPct * 100)}%)</span>
+                                        <span className="text-lg font-semibold text-foreground">€{(totalBudgetWithGuardrail * distribution.fernandoPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                    </div>
+                                </div>
+                            ) : null}
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -153,8 +196,28 @@ export function BudgetView() {
                                 <Euro className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">€{paymentItems.reduce((acc, item) => acc + item.paid, 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
-                                <p className="text-xs text-muted-foreground">{t('common.amountPaid')}</p>
+                                <div className="flex flex-col gap-2">
+                                    <div>
+                                        <div className="text-2xl font-bold">€{paymentItems.reduce((acc, item) => acc + item.paid, 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                                        <p className="text-xs text-muted-foreground">{t('common.amountPaid')}</p>
+                                    </div>
+                                    {(paymentItems.length > 0 && (distribution.chiaraPct > 0 || distribution.fernandoPct > 0)) ? (() => {
+                                        const total = paymentItems.reduce((acc, item) => acc + item.paid, 0);
+                                        if (total === 0) return null;
+                                        return (
+                                            <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
+                                                <div className="flex flex-col">
+                                                    <span className="text-muted-foreground">Chiara</span>
+                                                    <span className="font-semibold">€{(total * distribution.chiaraPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                </div>
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-muted-foreground">Fernando</span>
+                                                    <span className="font-semibold">€{(total * distribution.fernandoPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })() : null}
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>
@@ -163,8 +226,28 @@ export function BudgetView() {
                                 <Euro className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">€{paymentItems.reduce((acc, item) => acc + item.pending, 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
-                                <p className="text-xs text-muted-foreground">{t('common.amountRemaining')}</p>
+                                <div className="flex flex-col gap-2">
+                                    <div>
+                                        <div className="text-2xl font-bold">€{paymentItems.reduce((acc, item) => acc + item.pending, 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                                        <p className="text-xs text-muted-foreground">{t('common.amountRemaining')}</p>
+                                    </div>
+                                    {(paymentItems.length > 0 && (distribution.chiaraPct > 0 || distribution.fernandoPct > 0)) ? (() => {
+                                        const total = paymentItems.reduce((acc, item) => acc + item.pending, 0);
+                                        if (total === 0) return null;
+                                        return (
+                                            <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
+                                                <div className="flex flex-col">
+                                                    <span className="text-muted-foreground">Chiara</span>
+                                                    <span className="font-semibold">€{(total * distribution.chiaraPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                </div>
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-muted-foreground">Fernando</span>
+                                                    <span className="font-semibold">€{(total * distribution.fernandoPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })() : null}
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
