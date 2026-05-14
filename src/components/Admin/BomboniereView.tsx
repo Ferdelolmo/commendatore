@@ -11,6 +11,7 @@ export function BomboniereView() {
     const { t } = useTranslation();
     const { guests, isLoading, updateGuest } = useGuests();
     const [filter, setFilter] = useState<'all' | 'couples' | 'singles'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'confirmed'>('all');
 
     const units = useMemo(() => {
         const map = new Map<string, { id: string; guests: Guest[]; bomboniere_given: boolean }>();
@@ -37,20 +38,22 @@ export function BomboniereView() {
     const couplesCount = units.filter(u => u.guests.length > 1).length;
     const singlesCount = units.filter(u => u.guests.length === 1).length;
     const totalUnits = units.length;
+    
+    const pendingCount = units.filter(u => u.guests.some(g => g.confirmation_status === 'Pending')).length;
+    const confirmedCount = units.filter(u => !u.guests.some(g => g.confirmation_status === 'Pending')).length;
 
     const filteredUnits = useMemo(() => {
-        if (filter === 'couples') return units.filter(u => u.guests.length > 1);
-        if (filter === 'singles') return units.filter(u => u.guests.length === 1);
-        return units;
-    }, [units, filter]);
+        let result = units;
+        
+        if (filter === 'couples') result = result.filter(u => u.guests.length > 1);
+        if (filter === 'singles') result = result.filter(u => u.guests.length === 1);
+        
+        if (statusFilter === 'pending') result = result.filter(u => u.guests.some(g => g.confirmation_status === 'Pending'));
+        if (statusFilter === 'confirmed') result = result.filter(u => !u.guests.some(g => g.confirmation_status === 'Pending'));
+        
+        return result;
+    }, [units, filter, statusFilter]);
 
-    const toggleBomboniere = async (unit: { id: string; guests: Guest[]; bomboniere_given: boolean }) => {
-        const newValue = !unit.bomboniere_given;
-        // Optimistically we could update local state, but useGuests updateGuest should handle it
-        for (const guest of unit.guests) {
-            await updateGuest(guest.id, { bomboniere_given: newValue });
-        }
-    };
 
     if (isLoading) {
         return <div className="p-8 text-center">{t('common.loading', 'Loading...')}</div>;
@@ -97,27 +100,56 @@ export function BomboniereView() {
                 <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h2 className="text-2xl font-serif font-semibold text-slate-800">{t('bomboniere.distributionView', 'Distribution Overview')}</h2>
-                        <p className="text-slate-500 mt-1">{t('bomboniere.distributionDesc', 'Click on a circle to mark their bomboniere as distributed.')}</p>
+                        <p className="text-slate-500 mt-1">{t('bomboniere.distributionDesc', 'Overview of units and their confirmation status.')}</p>
                     </div>
-                    <div className="flex bg-slate-100 p-1 rounded-lg shrink-0">
-                        <button
-                            onClick={() => setFilter('all')}
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${filter === 'all' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
-                        >
-                            {t('common.all', 'All')}
-                        </button>
-                        <button
-                            onClick={() => setFilter('couples')}
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${filter === 'couples' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
-                        >
-                            {t('bomboniere.couples', 'Couples')}
-                        </button>
-                        <button
-                            onClick={() => setFilter('singles')}
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${filter === 'singles' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
-                        >
-                            {t('bomboniere.singles', 'Singles')}
-                        </button>
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                        <div className="flex bg-slate-100 p-1 rounded-lg">
+                            <button
+                                onClick={() => setFilter('all')}
+                                className={`flex flex-col items-center px-4 py-1 text-sm font-medium rounded-md transition-all ${filter === 'all' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                <span>{t('common.all', 'All')}</span>
+                                <span className="text-[10px] opacity-70">{totalUnits}</span>
+                            </button>
+                            <button
+                                onClick={() => setFilter('couples')}
+                                className={`flex flex-col items-center px-4 py-1 text-sm font-medium rounded-md transition-all ${filter === 'couples' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                <span>{t('bomboniere.couples', 'Couples')}</span>
+                                <span className="text-[10px] opacity-70">{couplesCount}</span>
+                            </button>
+                            <button
+                                onClick={() => setFilter('singles')}
+                                className={`flex flex-col items-center px-4 py-1 text-sm font-medium rounded-md transition-all ${filter === 'singles' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                <span>{t('bomboniere.singles', 'Singles')}</span>
+                                <span className="text-[10px] opacity-70">{singlesCount}</span>
+                            </button>
+                        </div>
+                        
+                        <div className="flex bg-slate-100 p-1 rounded-lg">
+                            <button
+                                onClick={() => setStatusFilter('all')}
+                                className={`flex flex-col items-center px-4 py-1 text-sm font-medium rounded-md transition-all ${statusFilter === 'all' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                <span>{t('common.all', 'All')}</span>
+                                <span className="text-[10px] opacity-70">{totalUnits}</span>
+                            </button>
+                            <button
+                                onClick={() => setStatusFilter('pending')}
+                                className={`flex flex-col items-center px-4 py-1 text-sm font-medium rounded-md transition-all ${statusFilter === 'pending' ? 'bg-white shadow-sm text-amber-700' : 'text-slate-500 hover:text-amber-700'}`}
+                            >
+                                <span>{t('common.pending', 'Pending')}</span>
+                                <span className="text-[10px] opacity-70">{pendingCount}</span>
+                            </button>
+                            <button
+                                onClick={() => setStatusFilter('confirmed')}
+                                className={`flex flex-col items-center px-4 py-1 text-sm font-medium rounded-md transition-all ${statusFilter === 'confirmed' ? 'bg-white shadow-sm text-emerald-700' : 'text-slate-500 hover:text-emerald-700'}`}
+                            >
+                                <span>{t('common.confirmed', 'Confirmed')}</span>
+                                <span className="text-[10px] opacity-70">{confirmedCount}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -127,6 +159,7 @@ export function BomboniereView() {
                             {filteredUnits.map(unit => {
                                 const names = unit.guests.map(g => g.name).join(' & ');
                                 const isGiven = unit.bomboniere_given;
+                                const isPending = unit.guests.some(g => g.confirmation_status === 'Pending');
                                 
                                 return (
                                     <motion.div
@@ -135,14 +168,11 @@ export function BomboniereView() {
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.9 }}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => toggleBomboniere(unit)}
                                         className={`
-                                            relative group cursor-pointer rounded-full aspect-square flex flex-col items-center justify-center p-4 text-center transition-all duration-300 border-4 shadow-sm
+                                            relative rounded-full aspect-square flex flex-col items-center justify-center p-4 text-center transition-all duration-300 border-4 shadow-sm
                                             ${isGiven 
-                                                ? 'bg-primary/5 border-primary text-primary hover:bg-primary/10 hover:shadow-md shadow-primary/20' 
-                                                : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300 hover:shadow-md'
+                                                ? 'bg-primary/5 border-primary text-primary shadow-primary/20' 
+                                                : 'bg-slate-50 border-slate-200 text-slate-600'
                                             }
                                         `}
                                     >
@@ -160,9 +190,14 @@ export function BomboniereView() {
                                             {names}
                                         </span>
                                         
-                                        <span className={`text-[9px] sm:text-[10px] mt-1 sm:mt-2 px-2 py-0.5 rounded-full ${isGiven ? 'bg-primary/10' : 'bg-slate-200/50'}`}>
-                                            {unit.guests.length > 1 ? t('bomboniere.couple', 'Couple') : t('bomboniere.single', 'Single')}
-                                        </span>
+                                        <div className="flex flex-col sm:flex-row gap-1 mt-1 sm:mt-2">
+                                            <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full ${isGiven ? 'bg-primary/10' : 'bg-slate-200/50'}`}>
+                                                {unit.guests.length > 1 ? t('bomboniere.couple', 'Couple') : t('bomboniere.single', 'Single')}
+                                            </span>
+                                            <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full ${isPending ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                                {isPending ? t('common.pending', 'Pending') : t('common.confirmed', 'Confirmed')}
+                                            </span>
+                                        </div>
                                     </motion.div>
                                 );
                             })}
