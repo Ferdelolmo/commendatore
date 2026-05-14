@@ -88,6 +88,7 @@ export interface Guest {
   plus_one?: boolean;
   group_id?: string;
   side?: 'Fernando' | 'Chiara' | 'Both';
+  bomboniere_given?: boolean;
 }
 
 export interface Table {

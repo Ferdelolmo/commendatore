@@ -17,6 +17,7 @@ import { SuppliersView } from '@/components/Common/SuppliersView';
 import { GuestList } from './GuestList';
 import { TablesView } from './TablesView';
 import { GiftsView } from './GiftsView';
+import { BomboniereView } from './BomboniereView';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -53,7 +54,7 @@ export function AdminPanel() {
 
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<
-    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'guests' | 'tables' | 'gifts'
+    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'guests' | 'tables' | 'gifts' | 'bomboniere'
   >('overview');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in-progress' | 'completed' | string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -76,6 +77,7 @@ export function AdminPanel() {
       case 'guests': return t('nav.guests');
       case 'tables': return t('nav.tables');
       case 'gifts': return t('nav.gifts', 'Gifts');
+      case 'bomboniere': return t('nav.bomboniere', 'Bomboniere');
       case 'Friday': return t('days.Friday');
       case 'Saturday': return t('days.Saturday');
       case 'Sunday': return t('days.Sunday');
@@ -178,7 +180,7 @@ export function AdminPanel() {
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-6">
         {/* Action Bar */}
-        {activeTab !== 'cajon-sastre' && activeTab !== 'users' && activeTab !== 'budget' && activeTab !== 'suppliers' && activeTab !== 'guests' && activeTab !== 'tables' && activeTab !== 'gifts' && (
+        {activeTab !== 'cajon-sastre' && activeTab !== 'users' && activeTab !== 'budget' && activeTab !== 'suppliers' && activeTab !== 'guests' && activeTab !== 'tables' && activeTab !== 'gifts' && activeTab !== 'bomboniere' && (
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
               {statusFilter && (
@@ -241,6 +243,8 @@ export function AdminPanel() {
           <TablesView />
         ) : activeTab === 'gifts' && role === 'admin' ? (
           <GiftsView />
+        ) : activeTab === 'bomboniere' && role === 'admin' ? (
+          <BomboniereView />
         ) : activeTab === 'cajon-sastre' ? (
           <IdeasBoard onPromote={(content) => {
             setEditingTask(null); // Ensure new task mode

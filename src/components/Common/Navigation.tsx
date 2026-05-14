@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { TaskDay } from '@/types';
 import { cn } from '@/lib/utils';
-import { Calendar, LayoutDashboard, Users, Clock, PartyPopper, Sunset, Sun, Archive, PiggyBank, Briefcase, ChevronDown, ListCheck, Table, Gift } from 'lucide-react';
+import { Calendar, LayoutDashboard, Users, Clock, PartyPopper, Sunset, Sun, Archive, PiggyBank, Briefcase, ChevronDown, ListCheck, Table, Gift, Circle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface NavigationProps {
-  activeTab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'days' | 'guests' | 'tables' | 'gifts';
-  onTabChange: (tab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'days' | 'guests' | 'tables' | 'gifts') => void;
+  activeTab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'days' | 'guests' | 'tables' | 'gifts' | 'bomboniere';
+  onTabChange: (tab: TaskDay | 'overview' | 'timeline' | 'team' | 'calendar' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'days' | 'guests' | 'tables' | 'gifts' | 'bomboniere') => void;
   showOverview?: boolean;
   isAdmin?: boolean;
 }
@@ -178,6 +178,21 @@ export function Navigation({ activeTab, onTabChange, showOverview = false, isAdm
               )}
             >
               <Gift className="h-5 w-5" />
+            </button>
+          )}
+
+          {isAdmin && (
+            <button
+              onClick={() => onTabChange('bomboniere')}
+              title={t('nav.bomboniere', 'Bomboniere')}
+              className={cn(
+                'flex items-center justify-center px-3 py-3 text-sm font-medium border-b-2 transition-all',
+                activeTab === 'bomboniere'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+              )}
+            >
+              <Circle className="h-5 w-5" />
             </button>
           )}
 
