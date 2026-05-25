@@ -111,6 +111,9 @@
         "amountPaid": "Amount already paid",
         "totalPending": "Total Pending",
         "amountRemaining": "Amount remaining to pay",
+        "method": "Method",
+        "cash": "💵 Cash",
+        "transfer": "🏦 Transfer",
         "endOfTasks": "End of Timeline"
     },
     "tables": {

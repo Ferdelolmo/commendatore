@@ -111,6 +111,9 @@
         "amountPaid": "Importo già pagato",
         "totalPending": "Totale In Sospeso",
         "amountRemaining": "Importo rimanente da pagare",
+        "method": "Metodo",
+        "cash": "💵 Contanti",
+        "transfer": "🏦 Bonifico",
         "endOfTasks": "Fine della Cronologia"
     },
     "tables": {

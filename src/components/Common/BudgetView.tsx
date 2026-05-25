@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
     Euro,
     ShieldCheck,
@@ -204,20 +205,36 @@ export function BudgetView() {
                                         <div className="text-2xl font-bold">€{paymentItems.reduce((acc, item) => acc + item.paid, 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                         <p className="text-xs text-muted-foreground">{t('common.amountPaid')}</p>
                                     </div>
-                                    {(paymentItems.length > 0 && (distribution.chiaraPct > 0 || distribution.fernandoPct > 0)) ? (() => {
+                                    {(paymentItems.length > 0) ? (() => {
                                         const total = paymentItems.reduce((acc, item) => acc + item.paid, 0);
                                         if (total === 0) return null;
+                                        const cashPaid = paymentItems.filter(item => item.method === 'Cash').reduce((acc, item) => acc + item.paid, 0);
+                                        const transferPaid = paymentItems.filter(item => item.method === 'Transfer').reduce((acc, item) => acc + item.paid, 0);
                                         return (
-                                            <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
-                                                <div className="flex flex-col">
-                                                    <span className="text-muted-foreground">Chiara</span>
-                                                    <span className="font-semibold">€{(total * distribution.chiaraPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                            <>
+                                                <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-muted-foreground">{t('common.cash')}</span>
+                                                        <span className="font-semibold text-green-600">€{cashPaid.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                    </div>
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="text-muted-foreground">{t('common.transfer')}</span>
+                                                        <span className="font-semibold text-blue-600">€{transferPaid.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="flex flex-col items-end">
-                                                    <span className="text-muted-foreground">Fernando</span>
-                                                    <span className="font-semibold">€{(total * distribution.fernandoPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                                </div>
-                                            </div>
+                                                {(distribution.chiaraPct > 0 || distribution.fernandoPct > 0) && (
+                                                    <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-muted-foreground">Chiara</span>
+                                                            <span className="font-semibold">€{(total * distribution.chiaraPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                        </div>
+                                                        <div className="flex flex-col items-end">
+                                                            <span className="text-muted-foreground">Fernando</span>
+                                                            <span className="font-semibold">€{(total * distribution.fernandoPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
                                         );
                                     })() : null}
                                 </div>
@@ -231,23 +248,39 @@ export function BudgetView() {
                             <CardContent>
                                 <div className="flex flex-col gap-2">
                                     <div>
-                                        <div className="text-2xl font-bold">€{paymentItems.reduce((acc, item) => acc + item.pending, 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                                        <div className="text-2xl font-bold">€{paymentItems.reduce((acc, item) => acc + (item.amount - item.paid), 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                         <p className="text-xs text-muted-foreground">{t('common.amountRemaining')}</p>
                                     </div>
-                                    {(paymentItems.length > 0 && (distribution.chiaraPct > 0 || distribution.fernandoPct > 0)) ? (() => {
-                                        const total = paymentItems.reduce((acc, item) => acc + item.pending, 0);
+                                    {(paymentItems.length > 0) ? (() => {
+                                        const total = paymentItems.reduce((acc, item) => acc + (item.amount - item.paid), 0);
                                         if (total === 0) return null;
+                                        const cashPending = paymentItems.filter(item => item.method === 'Cash').reduce((acc, item) => acc + (item.amount - item.paid), 0);
+                                        const transferPending = paymentItems.filter(item => item.method === 'Transfer').reduce((acc, item) => acc + (item.amount - item.paid), 0);
                                         return (
-                                            <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
-                                                <div className="flex flex-col">
-                                                    <span className="text-muted-foreground">Chiara</span>
-                                                    <span className="font-semibold">€{(total * distribution.chiaraPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                            <>
+                                                <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-muted-foreground">{t('common.cash')}</span>
+                                                        <span className="font-semibold text-orange-500">€{cashPending.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                    </div>
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="text-muted-foreground">{t('common.transfer')}</span>
+                                                        <span className="font-semibold text-orange-500">€{transferPending.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="flex flex-col items-end">
-                                                    <span className="text-muted-foreground">Fernando</span>
-                                                    <span className="font-semibold">€{(total * distribution.fernandoPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                                </div>
-                                            </div>
+                                                {(distribution.chiaraPct > 0 || distribution.fernandoPct > 0) && (
+                                                    <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-muted-foreground">Chiara</span>
+                                                            <span className="font-semibold">€{(total * distribution.chiaraPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                        </div>
+                                                        <div className="flex flex-col items-end">
+                                                            <span className="text-muted-foreground">Fernando</span>
+                                                            <span className="font-semibold">€{(total * distribution.fernandoPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
                                         );
                                     })() : null}
                                 </div>
@@ -259,7 +292,7 @@ export function BudgetView() {
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>{t('common.payments')}</CardTitle>
                             {isEditing && (
-                                <Button size="sm" variant="outline" onClick={() => addPaymentItem({ description: 'New Payment', amount: 0, paid: 0, pending: 0 })}>
+                                <Button size="sm" variant="outline" onClick={() => addPaymentItem({ description: 'New Payment', amount: 0, paid: 0, pending: 0, method: 'Transfer' })}>
                                     <Plus className="h-4 w-4 mr-2" /> {t('common.addPayment')}
                                 </Button>
                             )}
@@ -269,6 +302,7 @@ export function BudgetView() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="w-[140px]">{t('common.concept')}</TableHead>
+                                        <TableHead className="w-[120px]">{t('common.method')}</TableHead>
                                         <TableHead className="text-right">{t('common.total')}</TableHead>
                                         <TableHead className="text-right">{t('common.paid')}</TableHead>
                                         <TableHead className="text-right">{t('common.pending')}</TableHead>
@@ -278,7 +312,7 @@ export function BudgetView() {
                                 <TableBody>
                                     {paymentItems.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={isEditing ? 5 : 4} className="text-center py-8 text-muted-foreground">
+                                            <TableCell colSpan={isEditing ? 6 : 5} className="text-center py-8 text-muted-foreground">
                                                 {t('common.noPaymentsFound')}
                                             </TableCell>
                                         </TableRow>
@@ -293,13 +327,34 @@ export function BudgetView() {
                                                         />
                                                     ) : item.description}
                                                 </TableCell>
+                                                <TableCell>
+                                                    {isEditing ? (
+                                                        <Select
+                                                            value={item.method || ''}
+                                                            onValueChange={(value) => updatePaymentItem(item.id, { method: value as 'Cash' | 'Transfer' })}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder={t('common.method')} />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="Cash">{t('common.cash')}</SelectItem>
+                                                                <SelectItem value="Transfer">{t('common.transfer')}</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    ) : (
+                                                        item.method === 'Cash' ? t('common.cash') : item.method === 'Transfer' ? t('common.transfer') : '-'
+                                                    )}
+                                                </TableCell>
                                                 <TableCell className="text-right">
                                                     {isEditing ? (
                                                         <Input
                                                             type="number"
                                                             className="text-right"
                                                             value={item.amount}
-                                                            onChange={(e) => updatePaymentItem(item.id, { amount: parseFloat(e.target.value) || 0 })}
+                                                            onChange={(e) => {
+                                                                const newAmount = parseFloat(e.target.value) || 0;
+                                                                updatePaymentItem(item.id, { amount: newAmount, pending: newAmount - item.paid });
+                                                            }}
                                                         />
                                                     ) : `€${item.amount.toLocaleString()}`}
                                                 </TableCell>
@@ -309,19 +364,15 @@ export function BudgetView() {
                                                             type="number"
                                                             className="text-right"
                                                             value={item.paid}
-                                                            onChange={(e) => updatePaymentItem(item.id, { paid: parseFloat(e.target.value) || 0 })}
+                                                            onChange={(e) => {
+                                                                const newPaid = parseFloat(e.target.value) || 0;
+                                                                updatePaymentItem(item.id, { paid: newPaid, pending: item.amount - newPaid });
+                                                            }}
                                                         />
                                                     ) : `€${item.paid.toLocaleString()}`}
                                                 </TableCell>
-                                                <TableCell className="text-right">
-                                                    {isEditing ? (
-                                                        <Input
-                                                            type="number"
-                                                            className="text-right"
-                                                            value={item.pending}
-                                                            onChange={(e) => updatePaymentItem(item.id, { pending: parseFloat(e.target.value) || 0 })}
-                                                        />
-                                                    ) : `€${item.pending.toLocaleString()}`}
+                                                <TableCell className="text-right font-medium">
+                                                    €{(item.amount - item.paid).toLocaleString()}
                                                 </TableCell>
                                                 {isEditing && (
                                                     <TableCell>

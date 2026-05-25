@@ -111,6 +111,9 @@
         "amountPaid": "Cantidad ya pagada",
         "totalPending": "Total Pendiente",
         "amountRemaining": "Cantidad restante por pagar",
+        "method": "Método",
+        "cash": "💵 Efectivo",
+        "transfer": "🏦 Transferencia",
         "endOfTasks": "Fin de la Cronología"
     },
     "tables": {

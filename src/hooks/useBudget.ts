@@ -14,6 +14,7 @@ export interface PaymentItem {
     amount: number;
     paid: number;
     pending: number;
+    method?: 'Cash' | 'Transfer';
 }
 
 export function useBudget() {
