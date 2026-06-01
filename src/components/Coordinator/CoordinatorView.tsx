@@ -7,6 +7,7 @@ import { TaskList } from '@/components/Common/TaskList';
 import { TimelineView } from '@/components/Common/TimelineView';
 import { TeamOverview } from '@/components/Common/TeamOverview';
 import { CalendarView } from '@/components/Common/CalendarView';
+import { SundayColumnsView } from '@/components/Common/SundayColumnsView';
 import { Card, CardContent } from '@/components/ui/card';
 import { Info, CheckCircle2, Clock, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -14,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 export function CoordinatorView() {
   const { isLoading, updateTaskStatus, getTasksByDay, getStats, tasks: allTasks } = useTasks();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<TaskDay | 'timeline' | 'team' | 'calendar' | 'cajon-sastre'>('Friday');
+  const [activeTab, setActiveTab] = useState<TaskDay | 'timeline' | 'team' | 'calendar' | 'cajon-sastre' | 'sunday-columns'>('Friday');
   const [selectedAssignee, setSelectedAssignee] = useState<string | null>(null);
 
   const handleStatusChange = (taskId: number, status: TaskStatus) => {
@@ -47,7 +48,7 @@ export function CoordinatorView() {
   // Wait, I need to destructure 'tasks' from useTasks first.
 
 
-  const tasks = (activeTab === 'timeline' || activeTab === 'team' || activeTab === 'calendar') ? allTasks : getTasksByDay(activeTab);
+  const tasks = (activeTab === 'timeline' || activeTab === 'team' || activeTab === 'calendar' || activeTab === 'sunday-columns') ? allTasks : getTasksByDay(activeTab as TaskDay);
 
   return (
     <div className="min-h-screen bg-background">
@@ -112,14 +113,16 @@ export function CoordinatorView() {
         </div>
 
         {/* Day Header */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-serif font-semibold text-foreground">
-            {activeTab}'s Schedule
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {tasks.length} tasks for this day • Update status as you complete each task
-          </p>
-        </div>
+        {activeTab !== 'sunday-columns' && (
+          <div className="mb-6">
+            <h2 className="text-2xl font-serif font-semibold text-foreground">
+              {activeTab}'s Schedule
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {tasks.length} tasks for this day • Update status as you complete each task
+            </p>
+          </div>
+        )}
 
         {/* Task List */}
         {/* Task List or Timeline or Team or Calendar */}
@@ -154,6 +157,11 @@ export function CoordinatorView() {
           </div>
         ) : activeTab === 'calendar' ? (
           <CalendarView tasks={tasks} />
+        ) : activeTab === 'sunday-columns' ? (
+          <SundayColumnsView
+            tasks={tasks}
+            onStatusChange={handleStatusChange}
+          />
         ) : (
           <TimelineView
             tasks={tasks}

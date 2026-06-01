@@ -10,6 +10,7 @@ import { TeamOverview } from '@/components/Common/TeamOverview';
 import { CalendarView } from '@/components/Common/CalendarView';
 import { IdeasBoard } from '@/components/Common/IdeasBoard';
 import { BudgetView } from '@/components/Common/BudgetView';
+import { SundayColumnsView } from '@/components/Common/SundayColumnsView';
 import { StatsOverview } from './StatsOverview';
 import { TaskModal } from './TaskModal';
 import { UserManagement } from './UserManagement';
@@ -54,7 +55,7 @@ export function AdminPanel() {
 
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<
-    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'guests' | 'tables' | 'gifts' | 'bomboniere'
+    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'guests' | 'tables' | 'gifts' | 'bomboniere' | 'sunday-columns'
   >('overview');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in-progress' | 'completed' | string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,6 +72,7 @@ export function AdminPanel() {
       case 'timeline': return t('nav.timeline');
       case 'team': return t('nav.team');
       case 'calendar': return t('nav.calendar');
+      case 'sunday-columns': return t('nav.sundayColumns', 'Sunday Columns');
       case 'cajon-sastre': return t('nav.cajonSastre');
       case 'budget': return t('nav.budget');
       case 'suppliers': return t('nav.suppliers');
@@ -180,7 +182,7 @@ export function AdminPanel() {
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-6">
         {/* Action Bar */}
-        {activeTab !== 'cajon-sastre' && activeTab !== 'users' && activeTab !== 'budget' && activeTab !== 'suppliers' && activeTab !== 'guests' && activeTab !== 'tables' && activeTab !== 'gifts' && activeTab !== 'bomboniere' && (
+        {activeTab !== 'cajon-sastre' && activeTab !== 'users' && activeTab !== 'budget' && activeTab !== 'suppliers' && activeTab !== 'guests' && activeTab !== 'tables' && activeTab !== 'gifts' && activeTab !== 'bomboniere' && activeTab !== 'sunday-columns' && (
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
               {statusFilter && (
@@ -233,6 +235,13 @@ export function AdminPanel() {
           </div>
         ) : activeTab === 'calendar' ? (
           <CalendarView tasks={tasks} onTaskClick={handleTaskJump} />
+        ) : activeTab === 'sunday-columns' ? (
+          <SundayColumnsView
+            tasks={tasks}
+            onStatusChange={handleStatusChange}
+            onEdit={handleEdit}
+            isAdmin={role === 'admin'}
+          />
         ) : activeTab === 'budget' ? (
           <BudgetView />
         ) : activeTab === 'suppliers' ? (
