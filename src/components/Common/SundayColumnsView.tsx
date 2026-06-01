@@ -54,7 +54,7 @@ export function SundayColumnsView({ tasks, onStatusChange, onEdit, isAdmin = fal
 
   // Filter tasks to Sunday only
   const sundayTasks = useMemo(() => {
-    return tasks.filter(t => t.day === 'Sunday');
+    return tasks.filter(t => t.day === 'Sunday' && t.status !== 'completed' && t.status !== 'deleted');
   }, [tasks]);
 
   // Extract list of all unique assignees present on Sunday

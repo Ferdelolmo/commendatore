@@ -66,20 +66,23 @@ export function GiftsView() {
         let chiaraCount = 0;
         let fernandoCount = 0;
 
-        guests.forEach(guest => {
+        // Only count confirmed guests for percentage split
+        guests.filter(g => g.confirmation_status === 'Confirmed').forEach(guest => {
             const side = guest.side?.toLowerCase();
             if (side === 'chiara') {
                 chiaraCount += 1;
             } else if (side === 'fernando') {
                 fernandoCount += 1;
             } else if (side === 'both') {
+                // Shared evenly
                 chiaraCount += 0.5;
                 fernandoCount += 0.5;
             }
         });
 
         const totalCount = chiaraCount + fernandoCount;
-        if (totalCount === 0) return { chiaraAmount: 0, fernandoAmount: 0, chiaraPct: 0, fernandoPct: 0 };
+        // Default to 50/50 if no confirmed guests
+        if (totalCount === 0) return { chiaraAmount: totalAmount * 0.5, fernandoAmount: totalAmount * 0.5, chiaraPct: 0.5, fernandoPct: 0.5 };
 
         const chiaraPct = chiaraCount / totalCount;
         const fernandoPct = fernandoCount / totalCount;
@@ -131,18 +134,6 @@ export function GiftsView() {
                             <CardTitle className="text-sm font-medium text-muted-foreground">{t('gifts.totalReceived', 'Total Received')}</CardTitle>
                             <div className="text-3xl font-bold text-green-600">€{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
                         </div>
-                        {(totalAmount > 0 && (distribution.chiaraPct > 0 || distribution.fernandoPct > 0)) ? (
-                            <div className="flex gap-6">
-                                <div className="flex flex-col items-end">
-                                    <span className="text-sm text-muted-foreground">{t('gifts.chiaraShare', "Chiara")} ({Math.round(distribution.chiaraPct * 100)}%)</span>
-                                    <span className="text-xl font-semibold text-green-600">€{distribution.chiaraAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-                                </div>
-                                <div className="flex flex-col items-end">
-                                    <span className="text-sm text-muted-foreground">{t('gifts.fernandoShare', "Fernando")} ({Math.round(distribution.fernandoPct * 100)}%)</span>
-                                    <span className="text-xl font-semibold text-green-600">€{distribution.fernandoAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-                                </div>
-                            </div>
-                        ) : null}
                     </div>
                 </CardHeader>
             </Card>

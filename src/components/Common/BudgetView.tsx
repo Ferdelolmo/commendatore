@@ -49,27 +49,38 @@ export function BudgetView() {
     const distribution = useMemo(() => {
         let chiaraCount = 0;
         let fernandoCount = 0;
-        
-        guests.forEach(guest => {
+
+        // Only count confirmed guests for cost-sharing percentage
+        guests.filter(g => g.confirmation_status === 'Confirmed').forEach(guest => {
             const side = guest.side?.toLowerCase();
             if (side === 'chiara') {
                 chiaraCount += 1;
             } else if (side === 'fernando') {
                 fernandoCount += 1;
             } else if (side === 'both') {
+                // Guests from both sides are shared equally
                 chiaraCount += 0.5;
                 fernandoCount += 0.5;
             }
         });
-        
+
         const totalCount = chiaraCount + fernandoCount;
-        if (totalCount === 0) return { chiaraPct: 0, fernandoPct: 0 };
-        
+        // If no confirmed guests yet, default to 50/50
+        if (totalCount === 0) return { chiaraPct: 0.5, fernandoPct: 0.5 };
+
+        const chiaraPct = chiaraCount / totalCount;
+        const fernandoPct = fernandoCount / totalCount;
+
+        // Net cost each person owes: (total projected - gifts received) * their share
+        const netCost = totalBudgetWithGuardrail - totalGifts;
+
         return {
-            chiaraPct: chiaraCount / totalCount,
-            fernandoPct: fernandoCount / totalCount
+            chiaraPct,
+            fernandoPct,
+            chiaraOwes: netCost * chiaraPct,
+            fernandoOwes: netCost * fernandoPct,
         };
-    }, [guests]);
+    }, [guests, totalBudgetWithGuardrail, totalGifts]);
 
     if (isLoading && budgetItems.length === 0) {
         return <div className="p-8 text-center text-muted-foreground animate-pulse">{t('common.loading')}</div>;
@@ -100,19 +111,24 @@ export function BudgetView() {
                                 <div className="text-2xl font-bold">€{totalBudgetWithGuardrail.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                 <p className="text-xs text-muted-foreground">{t('common.totalProjectedCost')}</p>
                             </div>
-                            {(totalBudgetWithGuardrail > 0 && (distribution.chiaraPct > 0 || distribution.fernandoPct > 0)) ? (
-                                <div className="flex gap-6 mt-2 md:mt-0">
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-sm text-muted-foreground">Chiara</span>
-                                        <span className={`text-lg font-bold ${((totalBudgetWithGuardrail - totalGifts) * distribution.chiaraPct) > 0 ? 'text-orange-500' : 'text-green-600'}`}>
-                                            €{((totalBudgetWithGuardrail - totalGifts) * distribution.chiaraPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-sm text-muted-foreground">Fernando</span>
-                                        <span className={`text-lg font-bold ${((totalBudgetWithGuardrail - totalGifts) * distribution.fernandoPct) > 0 ? 'text-orange-500' : 'text-green-600'}`}>
-                                            €{((totalBudgetWithGuardrail - totalGifts) * distribution.fernandoPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                                        </span>
+                            {(totalBudgetWithGuardrail > 0) ? (
+                                <div className="flex flex-col items-end gap-1 mt-2 md:mt-0">
+                                    <p className="text-[11px] text-muted-foreground text-right">
+                                        Net cost after gifts ({Math.round(distribution.chiaraPct * 100)}% / {Math.round(distribution.fernandoPct * 100)}%)
+                                    </p>
+                                    <div className="flex gap-6">
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-sm text-muted-foreground">Chiara</span>
+                                            <span className={`text-lg font-bold ${(distribution.chiaraOwes ?? 0) > 0 ? 'text-orange-500' : 'text-green-600'}`}>
+                                                €{(distribution.chiaraOwes ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-sm text-muted-foreground">Fernando</span>
+                                            <span className={`text-lg font-bold ${(distribution.fernandoOwes ?? 0) > 0 ? 'text-orange-500' : 'text-green-600'}`}>
+                                                €{(distribution.fernandoOwes ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             ) : null}
