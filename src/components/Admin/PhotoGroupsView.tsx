@@ -9,27 +9,8 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useGuests } from '@/hooks/useGuests';
-import { Guest } from '@/types';
-
-// ── Photo Group metadata (persisted in localStorage) ──────────────────────
-interface PhotoGroup {
-    id: string;
-    alias: string;
-    groupNumber: number;
-}
-
-const STORAGE_KEY = 'commendatore_photo_groups';
-
-function loadGroups(): PhotoGroup[] {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch { return []; }
-}
-
-function saveGroups(groups: PhotoGroup[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(groups));
-}
+import { usePhotoGroups } from '@/hooks/usePhotoGroups';
+import { Guest, PhotoGroup } from '@/types';
 
 // ── Entity: a couple or single (same logic as BomboniereView) ─────────────
 interface Entity {
@@ -44,8 +25,7 @@ export function PhotoGroupsView() {
     const { guests, isLoading, updateGuest } = useGuests();
 
     // ── Photo groups state ────────────────────────────────────────────────
-    const [photoGroups, setPhotoGroups] = useState<PhotoGroup[]>(loadGroups);
-    useEffect(() => { saveGroups(photoGroups); }, [photoGroups]);
+    const { photoGroups, isLoadingGroups, addGroup, updateGroup, deleteGroup } = usePhotoGroups();
 
     // ── Modal state ───────────────────────────────────────────────────────
     const [modalOpen, setModalOpen] = useState(false);
@@ -77,10 +57,10 @@ export function PhotoGroupsView() {
     }, [guests]);
 
     // ── Derived: unassigned entities ─────────────────────────────────────
-    const unassigned = useMemo(() =>
-        entities.filter(e => !e.photoGroupId),
-        [entities]
-    );
+    const unassigned = useMemo(() => {
+        const validGroupIds = new Set(photoGroups.map(g => g.id));
+        return entities.filter(e => !e.photoGroupId || !validGroupIds.has(e.photoGroupId));
+    }, [entities, photoGroups]);
 
     // ── Helpers ──────────────────────────────────────────────────────────
     const getEntitiesForGroup = useCallback((groupId: string) =>
@@ -89,7 +69,7 @@ export function PhotoGroupsView() {
     );
 
     const usedNumbers = useMemo(() =>
-        photoGroups.map(g => g.groupNumber),
+        photoGroups.map(g => g.group_number),
         [photoGroups]
     );
 
@@ -105,7 +85,7 @@ export function PhotoGroupsView() {
     const openEditModal = (group: PhotoGroup) => {
         setEditingGroup(group);
         setAlias(group.alias);
-        setGroupNumber(group.groupNumber.toString());
+        setGroupNumber(group.group_number.toString());
         setNumberError('');
         setModalOpen(true);
     };
@@ -122,7 +102,7 @@ export function PhotoGroupsView() {
 
         // Uniqueness check (exclude current group when editing)
         const conflict = photoGroups.find(g =>
-            g.groupNumber === num && g.id !== editingGroup?.id
+            g.group_number === num && g.id !== editingGroup?.id
         );
         if (conflict) {
             setNumberError(t('photoGroups.numberTaken', `Number ${num} is already used by "${conflict.alias}"`));
@@ -130,16 +110,12 @@ export function PhotoGroupsView() {
         }
 
         if (editingGroup) {
-            setPhotoGroups(prev =>
-                prev.map(g => g.id === editingGroup.id ? { ...g, alias: trimmedAlias, groupNumber: num } : g)
-            );
+            updateGroup(editingGroup.id, { alias: trimmedAlias, group_number: num });
         } else {
-            const newGroup: PhotoGroup = {
-                id: crypto.randomUUID(),
+            addGroup({
                 alias: trimmedAlias,
-                groupNumber: num,
-            };
-            setPhotoGroups(prev => [...prev, newGroup].sort((a, b) => a.groupNumber - b.groupNumber));
+                group_number: num,
+            });
         }
 
         setModalOpen(false);
@@ -153,7 +129,7 @@ export function PhotoGroupsView() {
                 e.guests.map(g => updateGuest(g.id, { photo_group_id: null } as any))
             )
         );
-        setPhotoGroups(prev => prev.filter(g => g.id !== groupId));
+        await deleteGroup(groupId);
     };
 
     // ── Drag & Drop handlers ─────────────────────────────────────────────
@@ -206,7 +182,7 @@ export function PhotoGroupsView() {
         return Math.max(...usedNumbers) + 1;
     }, [usedNumbers]);
 
-    if (isLoading) {
+    if (isLoading || isLoadingGroups) {
         return <div className="p-8 text-center text-muted-foreground">{t('common.loading', 'Loading...')}</div>;
     }
 
@@ -314,7 +290,7 @@ export function PhotoGroupsView() {
                     <ScrollArea className="flex-1 -mx-1 px-1">
                         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
                             {photoGroups
-                                .sort((a, b) => a.groupNumber - b.groupNumber)
+                                .sort((a, b) => a.group_number - b.group_number)
                                 .map(group => {
                                     const groupEntities = getEntitiesForGroup(group.id);
                                     const totalPeople = groupEntities.reduce((s, e) => s + e.guests.length, 0);
@@ -340,7 +316,7 @@ export function PhotoGroupsView() {
                                             {/* Group header */}
                                             <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-violet-50 to-slate-50 border-b border-slate-100">
                                                 <div className="flex items-center justify-center w-10 h-10 rounded-full bg-violet-600 text-white font-bold text-lg shadow-sm">
-                                                    {group.groupNumber}
+                                                    {group.group_number}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <h4 className="font-semibold text-slate-800 truncate">{group.alias}</h4>

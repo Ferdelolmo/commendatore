@@ -115,3 +115,9 @@ export interface Gift {
   group_id?: string;
   created_at?: string;
 }
+
+export interface PhotoGroup {
+  id: string;
+  alias: string;
+  group_number: number;
+}
