@@ -159,6 +159,41 @@ export function GuestList() {
                     </CardHeader>
                 </Card>
             </div>
+            {/* Menu Counts */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <Card>
+                    <CardHeader className="py-4">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            {t('👶')}
+                        </CardTitle>
+                        <div className="text-2xl font-bold">{stats.menuCounts?.children || 0}</div>
+                    </CardHeader>
+                </Card>
+                <Card>
+                    <CardHeader className="py-4">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            {t('🐠')}
+                        </CardTitle>
+                        <div className="text-2xl font-bold">{stats.menuCounts?.fish || 0}</div>
+                    </CardHeader>
+                </Card>
+                <Card>
+                    <CardHeader className="py-4">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            {t('🥬')}
+                        </CardTitle>
+                        <div className="text-2xl font-bold">{stats.menuCounts?.vegetarian || 0}</div>
+                    </CardHeader>
+                </Card>
+                <Card>
+                    <CardHeader className="py-4">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            {t('🥩')}
+                        </CardTitle>
+                        <div className="text-2xl font-bold">{stats.menuCounts?.meat || 0}</div>
+                    </CardHeader>
+                </Card>
+            </div>
 
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="relative w-full md:w-72">
@@ -259,8 +294,8 @@ export function GuestList() {
                                         {guest.side === 'Chiara' && <img src="https://i.imgur.com/MtxJGhX.jpeg" alt="Chiara" className="w-8 h-8 rounded-full inline object-cover shadow-sm mx-auto" />}
                                         {(guest.side === 'Both' || !guest.side) && (
                                             <div className="flex justify-center -space-x-2">
-                                               <img src="https://i.imgur.com/bqNCQ7n.jpeg" alt="Fer" className="w-8 h-8 rounded-full border-2 border-background object-cover shadow-sm" />
-                                               <img src="https://i.imgur.com/MtxJGhX.jpeg" alt="Chiara" className="w-8 h-8 rounded-full border-2 border-background object-cover shadow-sm" />
+                                                <img src="https://i.imgur.com/bqNCQ7n.jpeg" alt="Fer" className="w-8 h-8 rounded-full border-2 border-background object-cover shadow-sm" />
+                                                <img src="https://i.imgur.com/MtxJGhX.jpeg" alt="Chiara" className="w-8 h-8 rounded-full border-2 border-background object-cover shadow-sm" />
                                             </div>
                                         )}
                                     </TableCell>

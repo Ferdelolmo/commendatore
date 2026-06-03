@@ -4,6 +4,7 @@ import { Task, TaskDay, TaskStatus } from '@/types';
 import { useTasks } from '@/hooks/useTasks';
 import { Header } from '@/components/Common/Header';
 import { Navigation } from '@/components/Common/Navigation';
+import { PhotoGroupsView } from './PhotoGroupsView';
 import { TaskList } from '@/components/Common/TaskList';
 import { TimelineView } from '@/components/Common/TimelineView';
 import { TeamOverview } from '@/components/Common/TeamOverview';
@@ -55,7 +56,7 @@ export function AdminPanel() {
 
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<
-    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'guests' | 'tables' | 'gifts' | 'bomboniere' | 'sunday-columns'
+    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'guests' | 'tables' | 'gifts' | 'bomboniere' | 'sunday-columns' | 'photo'
   >('overview');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in-progress' | 'completed' | string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -182,7 +183,7 @@ export function AdminPanel() {
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-6">
         {/* Action Bar */}
-        {activeTab !== 'cajon-sastre' && activeTab !== 'users' && activeTab !== 'budget' && activeTab !== 'suppliers' && activeTab !== 'guests' && activeTab !== 'tables' && activeTab !== 'gifts' && activeTab !== 'bomboniere' && activeTab !== 'sunday-columns' && (
+        {activeTab !== 'cajon-sastre' && activeTab !== 'users' && activeTab !== 'budget' && activeTab !== 'suppliers' && activeTab !== 'guests' && activeTab !== 'tables' && activeTab !== 'gifts' && activeTab !== 'bomboniere' && activeTab !== 'sunday-columns' && activeTab !== 'photo' && (
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
               {statusFilter && (
@@ -254,6 +255,8 @@ export function AdminPanel() {
           <GiftsView />
         ) : activeTab === 'bomboniere' && role === 'admin' ? (
           <BomboniereView />
+        ) : activeTab === 'photo' ? (
+          <PhotoGroupsView />
         ) : activeTab === 'cajon-sastre' ? (
           <IdeasBoard onPromote={(content) => {
             setEditingTask(null); // Ensure new task mode

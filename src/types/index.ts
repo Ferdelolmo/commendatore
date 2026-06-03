@@ -76,6 +76,8 @@ export interface Supplier {
 }
 
 export interface Guest {
+  alias?: string;
+  number?: number;
   id: string;
   name: string;
   confirmation_status: 'Pending' | 'Confirmed' | 'Declined';
@@ -87,9 +89,11 @@ export interface Guest {
   table_id?: string;
   plus_one?: boolean;
   group_id?: string;
+  photo_group_id?: string;
   side?: 'Fernando' | 'Chiara' | 'Both';
   bomboniere_given?: boolean;
 }
+
 
 export interface Table {
   id: string;

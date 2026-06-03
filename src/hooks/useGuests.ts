@@ -162,8 +162,16 @@ export function useGuests() {
         const pending = guests.filter(g => g.confirmation_status === 'Pending').length;
         const preWedding = guests.filter(g => g.attending_pre_wedding && g.confirmation_status === 'Confirmed').length;
         const needsTransport = guests.filter(g => g.transport_needs !== 'None' && g.confirmation_status === 'Confirmed').length;
-
-        return { total, confirmed, declined, pending, preWedding, needsTransport };
+        // Menu preference counts
+        const menuCounts = guests.reduce((acc, g) => {
+            const pref = g.menu_preference?.toLowerCase();
+            if (pref === 'children') acc.children++;
+            else if (pref === 'fish') acc.fish++;
+            else if (pref === 'vegetarian' || pref === 'vegan') acc.vegetarian++;
+            else if (pref === 'meat' || pref === 'standard') acc.meat++;
+            return acc;
+        }, { children: 0, fish: 0, vegetarian: 0, meat: 0 });
+        return { total, confirmed, declined, pending, preWedding, needsTransport, menuCounts };
     };
 
     useEffect(() => {
@@ -264,6 +272,6 @@ export function useGuests() {
         deleteGuest,
         linkGuests,
         refreshGuests: fetchGuests,
-        stats: getStats(),
+        stats: getStats(), // includes menuCounts
     };
 }
