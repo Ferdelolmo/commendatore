@@ -5,35 +5,53 @@ import { Gift, CheckCircle2, Circle } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGuests } from '@/hooks/useGuests';
+import { useTables } from '@/hooks/useTables';
 import { Guest } from '@/types';
 
 export function BomboniereView() {
     const { t } = useTranslation();
     const { guests, isLoading, updateGuest } = useGuests();
+    const { tables, isLoading: tablesLoading } = useTables();
     const [filter, setFilter] = useState<'all' | 'couples' | 'singles'>('all');
     const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'confirmed'>('all');
 
     const units = useMemo(() => {
-        const map = new Map<string, { id: string; guests: Guest[]; bomboniere_given: boolean }>();
+        const map = new Map<string, { id: string; guests: Guest[]; bomboniere_given: boolean; table_name: string }>();
         guests.forEach(guest => {
             // Skip declined guests
             if (guest.confirmation_status === 'Declined') return;
 
             const unitId = guest.group_id || guest.id;
             if (!map.has(unitId)) {
+                let tableName = t('bomboniere.unassigned', 'Unassigned');
+                if (guest.table_id) {
+                    const table = tables.find(t => t.id === guest.table_id);
+                    if (table) tableName = table.name;
+                }
                 // Assume the first guest's bomboniere_given state represents the whole unit's
-                map.set(unitId, { id: unitId, guests: [], bomboniere_given: !!guest.bomboniere_given });
+                map.set(unitId, { 
+                    id: unitId, 
+                    guests: [], 
+                    bomboniere_given: !!guest.bomboniere_given,
+                    table_name: tableName
+                });
             }
             map.get(unitId)!.guests.push(guest);
         });
         
-        // Sort units by name for better display
+        // Sort units by table name then by name
         return Array.from(map.values()).sort((a, b) => {
+            if (a.table_name !== b.table_name) {
+                const unassignedStr = t('bomboniere.unassigned', 'Unassigned');
+                if (a.table_name === unassignedStr) return 1;
+                if (b.table_name === unassignedStr) return -1;
+                return a.table_name.localeCompare(b.table_name);
+            }
             const nameA = a.guests.map(g => g.name).join(' & ');
             const nameB = b.guests.map(g => g.name).join(' & ');
             return nameA.localeCompare(nameB);
         });
-    }, [guests]);
+    }, [guests, tables, t]);
 
     const couplesCount = units.filter(u => u.guests.length > 1).length;
     const singlesCount = units.filter(u => u.guests.length === 1).length;
@@ -54,8 +72,16 @@ export function BomboniereView() {
         return result;
     }, [units, filter, statusFilter]);
 
+    const groupedUnits = useMemo(() => {
+        const groups: Record<string, typeof filteredUnits> = {};
+        filteredUnits.forEach(unit => {
+            if (!groups[unit.table_name]) groups[unit.table_name] = [];
+            groups[unit.table_name].push(unit);
+        });
+        return groups;
+    }, [filteredUnits]);
 
-    if (isLoading) {
+    if (isLoading || tablesLoading) {
         return <div className="p-8 text-center">{t('common.loading', 'Loading...')}</div>;
     }
 
@@ -154,55 +180,62 @@ export function BomboniereView() {
                 </div>
 
                 <ScrollArea className="flex-1 -mx-2 px-2 pb-4">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 auto-rows-max p-2">
-                        <AnimatePresence>
-                            {filteredUnits.map(unit => {
-                                const names = unit.guests.map(g => g.name).join(' & ');
-                                const isGiven = unit.bomboniere_given;
-                                const isPending = unit.guests.some(g => g.confirmation_status === 'Pending');
-                                
-                                return (
-                                    <motion.div
-                                        key={unit.id}
-                                        layout
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        className={`
-                                            relative rounded-full aspect-square flex flex-col items-center justify-center p-4 text-center transition-all duration-300 border-4 shadow-sm
-                                            ${isGiven 
-                                                ? 'bg-primary/5 border-primary text-primary shadow-primary/20' 
-                                                : 'bg-slate-50 border-slate-200 text-slate-600'
-                                            }
-                                        `}
-                                    >
-                                        <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-                                            {isGiven ? (
-                                                <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                                            ) : (
-                                                <Circle className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300" />
-                                            )}
-                                        </div>
+                    {Object.entries(groupedUnits).map(([tableName, tableUnits]) => (
+                        <div key={tableName} className="mb-8">
+                            <h3 className="text-lg font-semibold text-slate-700 mb-4 px-2">
+                                {tableName} <span className="text-sm font-normal text-slate-400 ml-2">({tableUnits.length})</span>
+                            </h3>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 auto-rows-max p-2">
+                                <AnimatePresence>
+                                    {tableUnits.map(unit => {
+                                        const names = unit.guests.map(g => g.name).join(' & ');
+                                        const isGiven = unit.bomboniere_given;
+                                        const isPending = unit.guests.some(g => g.confirmation_status === 'Pending');
                                         
-                                        <Gift className={`w-8 h-8 sm:w-10 sm:h-10 mb-2 sm:mb-3 transition-colors ${isGiven ? 'text-primary' : 'text-slate-400'}`} />
-                                        
-                                        <span className="text-xs sm:text-sm font-semibold leading-tight line-clamp-2 w-full px-1 sm:px-4">
-                                            {names}
-                                        </span>
-                                        
-                                        <div className="flex flex-col sm:flex-row gap-1 mt-1 sm:mt-2">
-                                            <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full ${isGiven ? 'bg-primary/10' : 'bg-slate-200/50'}`}>
-                                                {unit.guests.length > 1 ? t('bomboniere.couple', 'Couple') : t('bomboniere.single', 'Single')}
-                                            </span>
-                                            <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full ${isPending ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                                                {isPending ? t('common.pending', 'Pending') : t('common.confirmed', 'Confirmed')}
-                                            </span>
-                                        </div>
-                                    </motion.div>
-                                );
-                            })}
-                        </AnimatePresence>
-                    </div>
+                                        return (
+                                            <motion.div
+                                                key={unit.id}
+                                                layout
+                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.9 }}
+                                                className={`
+                                                    relative rounded-full aspect-square flex flex-col items-center justify-center p-4 text-center transition-all duration-300 border-4 shadow-sm
+                                                    ${isGiven 
+                                                        ? 'bg-primary/5 border-primary text-primary shadow-primary/20' 
+                                                        : 'bg-slate-50 border-slate-200 text-slate-600'
+                                                    }
+                                                `}
+                                            >
+                                                <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+                                                    {isGiven ? (
+                                                        <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                                                    ) : (
+                                                        <Circle className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300" />
+                                                    )}
+                                                </div>
+                                                
+                                                <Gift className={`w-8 h-8 sm:w-10 sm:h-10 mb-2 sm:mb-3 transition-colors ${isGiven ? 'text-primary' : 'text-slate-400'}`} />
+                                                
+                                                <span className="text-xs sm:text-sm font-semibold leading-tight line-clamp-2 w-full px-1 sm:px-4">
+                                                    {names}
+                                                </span>
+                                                
+                                                <div className="flex flex-col sm:flex-row gap-1 mt-1 sm:mt-2">
+                                                    <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full ${isGiven ? 'bg-primary/10' : 'bg-slate-200/50'}`}>
+                                                        {unit.guests.length > 1 ? t('bomboniere.couple', 'Couple') : t('bomboniere.single', 'Single')}
+                                                    </span>
+                                                    <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full ${isPending ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                                        {isPending ? t('common.pending', 'Pending') : t('common.confirmed', 'Confirmed')}
+                                                    </span>
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </AnimatePresence>
+                            </div>
+                        </div>
+                    ))}
                 </ScrollArea>
             </div>
         </div>
