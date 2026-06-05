@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Gift, CheckCircle2, Circle, Users } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGuests } from '@/hooks/useGuests';
 import { useTables } from '@/hooks/useTables';
 import { Guest } from '@/types';
@@ -86,9 +85,19 @@ export function BomboniereView() {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-10rem)] gap-4 lg:gap-6">
+        <div className="flex flex-col gap-4 lg:gap-6 print:block">
+            <style>{`
+                @media print {
+                    body, html, #root { height: auto !important; overflow: visible !important; background: white !important; }
+                    /* Override layout restrictions */
+                    div[class*="h-[calc"] { height: auto !important; overflow: visible !important; display: block !important; }
+                    main { height: auto !important; overflow: visible !important; padding: 0 !important; background: white !important; }
+                    nav, aside, .print-hidden { display: none !important; }
+                }
+            `}</style>
+            
             {/* Top Section - KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0 print-hidden">
                 <Card className="border-none shadow-md bg-gradient-to-br from-white to-slate-50">
                     <CardHeader className="py-6">
                         <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
@@ -122,13 +131,20 @@ export function BomboniereView() {
             </div>
 
             {/* Main View - Circle/Bird's Eye View */}
-            <div className="flex-1 flex flex-col overflow-hidden bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+            <div className="flex flex-col bg-white rounded-xl shadow-sm border border-slate-100 p-6 print:border-none print:shadow-none print:p-0 print:bg-white">
                 <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h2 className="text-2xl font-serif font-semibold text-slate-800">{t('bomboniere.distributionView', 'Distribution Overview')}</h2>
-                        <p className="text-slate-500 mt-1">{t('bomboniere.distributionDesc', 'Overview of units and their confirmation status.')}</p>
+                        <p className="text-slate-500 mt-1 print-hidden">{t('bomboniere.distributionDesc', 'Overview of units and their confirmation status.')}</p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <div className="flex flex-wrap items-center gap-2 shrink-0 print-hidden">
+                        <button
+                            onClick={() => window.print()}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-slate-800 text-white rounded-md hover:bg-slate-700 transition-colors shadow-sm"
+                        >
+                            {t('common.print', 'Print PDF')}
+                        </button>
+                        <div className="w-px h-8 bg-slate-200 mx-1"></div>
                         <div className="flex bg-slate-100 p-1 rounded-lg">
                             <button
                                 onClick={() => setFilter('all')}
@@ -179,7 +195,7 @@ export function BomboniereView() {
                     </div>
                 </div>
 
-                <ScrollArea className="flex-1 px-2 pb-4">
+                <div className="px-2 pb-4">
                     <div className="flex flex-col gap-8">
                         {Object.entries(groupedUnits).map(([tableName, tableUnits]) => (
                             <div key={tableName} className="bg-slate-50/80 p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
@@ -254,7 +270,7 @@ export function BomboniereView() {
                             </div>
                         ))}
                     </div>
-                </ScrollArea>
+                </div>
             </div>
         </div>
     );
