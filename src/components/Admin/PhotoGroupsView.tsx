@@ -6,7 +6,6 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useGuests } from '@/hooks/useGuests';
 import { usePhotoGroups } from '@/hooks/usePhotoGroups';
@@ -187,7 +186,7 @@ export function PhotoGroupsView() {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-10rem)] gap-4 lg:gap-6">
+        <div className="flex flex-col gap-4 lg:gap-6 items-start">
             {/* ── KPI Cards ─────────────────────────────────────────── */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
                 <Card className="border-none shadow-md bg-gradient-to-br from-white to-slate-50">
@@ -227,10 +226,10 @@ export function PhotoGroupsView() {
             </div>
 
             {/* ── Main content: Unassigned pool + Groups ────────────── */}
-            <div className="flex-1 flex gap-4 lg:gap-6 overflow-hidden">
+            <div className="flex-1 w-full flex flex-col lg:flex-row gap-4 lg:gap-6 items-start">
                 {/* ── Left: Unassigned pool ─────────────────────────── */}
                 <div
-                    className={`w-72 lg:w-80 shrink-0 flex flex-col bg-white rounded-xl shadow-sm border transition-colors duration-200 ${
+                    className={`w-full lg:w-80 shrink-0 flex flex-col bg-white rounded-xl shadow-sm border transition-colors duration-200 lg:sticky lg:top-4 z-10 ${
                         dragOverTarget === 'unassigned'
                             ? 'border-amber-400 bg-amber-50/30'
                             : 'border-slate-100'
@@ -248,7 +247,7 @@ export function PhotoGroupsView() {
                             </span>
                         </h3>
                     </div>
-                    <ScrollArea className="flex-1 p-2">
+                    <div className="p-2 max-h-[calc(100vh-12rem)] overflow-y-auto">
                         <div className="space-y-1">
                             <AnimatePresence>
                                 {unassigned.map(entity => (
@@ -267,11 +266,11 @@ export function PhotoGroupsView() {
                                 </div>
                             )}
                         </div>
-                    </ScrollArea>
+                    </div>
                 </div>
 
                 {/* ── Right: Photo Groups grid ─────────────────────── */}
-                <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 flex flex-col min-w-0 w-full">
                     <div className="flex items-center justify-between mb-4 shrink-0">
                         <div>
                             <h2 className="text-2xl font-serif font-semibold text-slate-800">
@@ -287,8 +286,8 @@ export function PhotoGroupsView() {
                         </Button>
                     </div>
 
-                    <ScrollArea className="flex-1 -mx-1 px-1">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
+                    <div className="-mx-1 px-1">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
                             {photoGroups
                                 .sort((a, b) => a.group_number - b.group_number)
                                 .map(group => {
@@ -383,7 +382,7 @@ export function PhotoGroupsView() {
                                 </div>
                             )}
                         </div>
-                    </ScrollArea>
+                    </div>
                 </div>
             </div>
 

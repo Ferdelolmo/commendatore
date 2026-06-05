@@ -240,7 +240,7 @@ export function GuestList() {
             </div>
 
             {/* Scrollable Body Table */}
-            <div className="rounded-b-md border bg-card h-[calc(100vh-22rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+            <div className="rounded-b-md border bg-card">
                 <Table className="table-fixed w-full">
                     <TableBody>
                         {filteredGuests.length === 0 ? (

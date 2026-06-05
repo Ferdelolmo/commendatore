@@ -46,7 +46,6 @@ import { Badge } from '@/components/ui/badge';
 import { useTables } from '@/hooks/useTables';
 import { useGuests } from '@/hooks/useGuests';
 import { Guest, Table } from '@/types';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
 interface TableModalProps {
@@ -241,9 +240,9 @@ export function TablesView() {
     }
 
     return (
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-10rem)] gap-4 lg:gap-6">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-start">
             {/* Sidebar - Unassigned Guests */}
-            <Card className="w-full lg:w-80 h-48 lg:h-full flex flex-col bg-slate-50 border-none shadow-md shrink-0 order-first">
+            <Card className="w-full lg:w-80 max-h-[calc(100vh-8rem)] flex flex-col bg-slate-50 border-none shadow-md shrink-0 order-first lg:sticky lg:top-4 z-10">
                 <CardHeader className="pb-3 bg-white rounded-t-lg border-b">
                     <CardTitle className="text-lg flex justify-between items-center">
                         {t('tables.unassignedGuests')}
@@ -298,7 +297,7 @@ export function TablesView() {
             </Card>
 
             {/* Main Area - Tables */}
-            <div className="flex-1 flex flex-col h-full overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 w-full">
                 <div className="flex justify-between items-center mb-6 px-1">
                     <div>
                         <h2 className="text-2xl font-serif font-semibold">{t('tables.receptionPlan')}</h2>
@@ -310,7 +309,7 @@ export function TablesView() {
                     </Button>
                 </div>
 
-                <ScrollArea className="flex-1 -mx-4 px-4 pb-4">
+                <div className="-mx-4 px-4 pb-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-max">
                         <AnimatePresence>
                             {enrichedTables.map(table => (
@@ -423,7 +422,7 @@ export function TablesView() {
                             </div>
                         )}
                     </div>
-                </ScrollArea>
+                </div>
             </div>
 
             <TableModal
