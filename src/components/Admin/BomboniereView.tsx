@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Gift, CheckCircle2, Circle } from 'lucide-react';
+import { Gift, CheckCircle2, Circle, Users } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGuests } from '@/hooks/useGuests';
@@ -179,63 +179,81 @@ export function BomboniereView() {
                     </div>
                 </div>
 
-                <ScrollArea className="flex-1 -mx-2 px-2 pb-4">
-                    {Object.entries(groupedUnits).map(([tableName, tableUnits]) => (
-                        <div key={tableName} className="mb-8">
-                            <h3 className="text-lg font-semibold text-slate-700 mb-4 px-2">
-                                {tableName} <span className="text-sm font-normal text-slate-400 ml-2">({tableUnits.length})</span>
-                            </h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 auto-rows-max p-2">
-                                <AnimatePresence>
-                                    {tableUnits.map(unit => {
-                                        const names = unit.guests.map(g => g.name).join(' & ');
-                                        const isGiven = unit.bomboniere_given;
-                                        const isPending = unit.guests.some(g => g.confirmation_status === 'Pending');
-                                        
-                                        return (
-                                            <motion.div
-                                                key={unit.id}
-                                                layout
-                                                initial={{ opacity: 0, scale: 0.9 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                exit={{ opacity: 0, scale: 0.9 }}
-                                                className={`
-                                                    relative rounded-full aspect-square flex flex-col items-center justify-center p-4 text-center transition-all duration-300 border-4 shadow-sm
-                                                    ${isGiven 
-                                                        ? 'bg-primary/5 border-primary text-primary shadow-primary/20' 
-                                                        : 'bg-slate-50 border-slate-200 text-slate-600'
-                                                    }
-                                                `}
-                                            >
-                                                <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-                                                    {isGiven ? (
-                                                        <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                                                    ) : (
-                                                        <Circle className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300" />
-                                                    )}
-                                                </div>
-                                                
-                                                <Gift className={`w-8 h-8 sm:w-10 sm:h-10 mb-2 sm:mb-3 transition-colors ${isGiven ? 'text-primary' : 'text-slate-400'}`} />
-                                                
-                                                <span className="text-xs sm:text-sm font-semibold leading-tight line-clamp-2 w-full px-1 sm:px-4">
-                                                    {names}
-                                                </span>
-                                                
-                                                <div className="flex flex-col sm:flex-row gap-1 mt-1 sm:mt-2">
-                                                    <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full ${isGiven ? 'bg-primary/10' : 'bg-slate-200/50'}`}>
-                                                        {unit.guests.length > 1 ? t('bomboniere.couple', 'Couple') : t('bomboniere.single', 'Single')}
+                <ScrollArea className="flex-1 px-2 pb-4">
+                    <div className="flex flex-col gap-8">
+                        {Object.entries(groupedUnits).map(([tableName, tableUnits]) => (
+                            <div key={tableName} className="bg-slate-50/80 p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
+                                {/* Decorative background element */}
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] -z-0 pointer-events-none" />
+                                
+                                <div className="flex items-center gap-4 mb-8 relative z-10 border-b border-slate-200/60 pb-4">
+                                    <div className="p-3 bg-white shadow-sm rounded-2xl border border-slate-100 text-primary">
+                                        <Users className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-2xl font-serif font-bold text-slate-800">
+                                            {tableName}
+                                        </h3>
+                                        <div className="text-sm font-medium text-slate-500 mt-1.5 flex items-center gap-2">
+                                            <span className="bg-white px-2.5 py-1 rounded-full shadow-sm border border-slate-100 text-xs">
+                                                {tableUnits.length} {t('bomboniere.entities', 'Entities')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 auto-rows-max relative z-10">
+                                    <AnimatePresence>
+                                        {tableUnits.map(unit => {
+                                            const names = unit.guests.map(g => g.name).join(' & ');
+                                            const isGiven = unit.bomboniere_given;
+                                            const isPending = unit.guests.some(g => g.confirmation_status === 'Pending');
+                                            
+                                            return (
+                                                <motion.div
+                                                    key={unit.id}
+                                                    layout
+                                                    initial={{ opacity: 0, scale: 0.9 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.9 }}
+                                                    className={`
+                                                        relative rounded-full aspect-square flex flex-col items-center justify-center p-4 text-center transition-all duration-300 border-4 shadow-md hover:shadow-lg cursor-default
+                                                        ${isGiven 
+                                                            ? 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary text-primary shadow-primary/20 hover:scale-105' 
+                                                            : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200 hover:scale-105'
+                                                        }
+                                                    `}
+                                                >
+                                                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+                                                        {isGiven ? (
+                                                            <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary drop-shadow-sm" />
+                                                        ) : (
+                                                            <Circle className="w-5 h-5 sm:w-6 sm:h-6 text-slate-200" />
+                                                        )}
+                                                    </div>
+                                                    
+                                                    <Gift className={`w-8 h-8 sm:w-10 sm:h-10 mb-2 sm:mb-3 transition-colors ${isGiven ? 'text-primary' : 'text-slate-300'}`} />
+                                                    
+                                                    <span className="text-xs sm:text-sm font-semibold leading-tight line-clamp-2 w-full px-1 sm:px-4">
+                                                        {names}
                                                     </span>
-                                                    <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full ${isPending ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                                                        {isPending ? t('common.pending', 'Pending') : t('common.confirmed', 'Confirmed')}
-                                                    </span>
-                                                </div>
-                                            </motion.div>
-                                        );
-                                    })}
-                                </AnimatePresence>
+                                                    
+                                                    <div className="flex flex-col sm:flex-row gap-1 mt-2 sm:mt-3">
+                                                        <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full font-medium ${isGiven ? 'bg-primary/20 text-primary-800' : 'bg-slate-100 text-slate-500'}`}>
+                                                            {unit.guests.length > 1 ? t('bomboniere.couple', 'Couple') : t('bomboniere.single', 'Single')}
+                                                        </span>
+                                                        <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full font-medium ${isPending ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                                            {isPending ? t('common.pending', 'Pending') : t('common.confirmed', 'Confirmed')}
+                                                        </span>
+                                                    </div>
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </AnimatePresence>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </ScrollArea>
             </div>
         </div>
