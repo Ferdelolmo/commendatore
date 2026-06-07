@@ -92,6 +92,9 @@ export interface Guest {
   photo_group_id?: string;
   side?: 'Fernando' | 'Chiara' | 'Both';
   bomboniere_given?: boolean;
+  seat_index?: number;
+  is_table_captain?: boolean;
+  needs_baby_gift?: boolean;
 }
 
 

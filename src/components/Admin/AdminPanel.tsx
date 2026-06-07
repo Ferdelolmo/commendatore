@@ -18,6 +18,7 @@ import { UserManagement } from './UserManagement';
 import { SuppliersView } from '@/components/Common/SuppliersView';
 import { GuestList } from './GuestList';
 import { TablesView } from './TablesView';
+import { SeatingPlanView } from './SeatingPlanView';
 import { GiftsView } from './GiftsView';
 import { BomboniereView } from './BomboniereView';
 import { Button } from '@/components/ui/button';
@@ -56,7 +57,7 @@ export function AdminPanel() {
 
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<
-    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'guests' | 'tables' | 'gifts' | 'bomboniere' | 'sunday-columns' | 'photo'
+    TaskDay | 'overview' | 'team' | 'calendar' | 'timeline' | 'users' | 'cajon-sastre' | 'budget' | 'suppliers' | 'guests' | 'tables' | 'seating' | 'gifts' | 'bomboniere' | 'sunday-columns' | 'photo'
   >('overview');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in-progress' | 'completed' | string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -79,6 +80,7 @@ export function AdminPanel() {
       case 'suppliers': return t('nav.suppliers');
       case 'guests': return t('nav.guests');
       case 'tables': return t('nav.tables');
+      case 'seating': return t('nav.seating', 'Seating Plan');
       case 'gifts': return t('nav.gifts', 'Gifts');
       case 'bomboniere': return t('nav.bomboniere', 'Bomboniere');
       case 'Friday': return t('days.Friday');
@@ -183,7 +185,7 @@ export function AdminPanel() {
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-6">
         {/* Action Bar */}
-        {activeTab !== 'cajon-sastre' && activeTab !== 'users' && activeTab !== 'budget' && activeTab !== 'suppliers' && activeTab !== 'guests' && activeTab !== 'tables' && activeTab !== 'gifts' && activeTab !== 'bomboniere' && activeTab !== 'sunday-columns' && activeTab !== 'photo' && (
+        {activeTab !== 'cajon-sastre' && activeTab !== 'users' && activeTab !== 'budget' && activeTab !== 'suppliers' && activeTab !== 'guests' && activeTab !== 'tables' && activeTab !== 'seating' && activeTab !== 'gifts' && activeTab !== 'bomboniere' && activeTab !== 'sunday-columns' && activeTab !== 'photo' && (
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
               {statusFilter && (
@@ -251,6 +253,8 @@ export function AdminPanel() {
           <GuestList />
         ) : activeTab === 'tables' && role === 'admin' ? (
           <TablesView />
+        ) : activeTab === 'seating' && role === 'admin' ? (
+          <SeatingPlanView />
         ) : activeTab === 'gifts' && role === 'admin' ? (
           <GiftsView />
         ) : activeTab === 'bomboniere' && role === 'admin' ? (

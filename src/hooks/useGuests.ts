@@ -130,6 +130,39 @@ export function useGuests() {
         }
     };
 
+    const updateGuestsBulk = async (updates: { id: string; updates: Partial<Guest> }[]) => {
+        try {
+            // We do a simple loop here for ease, but a real bulk update would be better via RPC.
+            // Supabase JS doesn't have a built in bulk update by different IDs easily without upsert.
+            // Since we know the items exist, we can use upsert or just loop promises.
+            const promises = updates.map(async ({ id, updates }) => {
+                const payload = { ...updates };
+                delete payload.side; // strip virtual columns
+                return supabase.from('guests').update(payload).eq('id', id);
+            });
+            
+            await Promise.all(promises);
+
+            setGuests((prev) => {
+                const updateMap = new Map(updates.map(u => [u.id, u.updates]));
+                return prev.map(g => {
+                    const u = updateMap.get(g.id);
+                    if (u) return { ...g, ...u };
+                    return g;
+                });
+            });
+
+        } catch (error) {
+            console.error('Error updating guests in bulk:', error);
+            toast({
+                title: 'Error',
+                description: 'Failed to update guests',
+                variant: 'destructive',
+            });
+            throw error;
+        }
+    };
+
     const deleteGuest = async (id: string) => {
         try {
             const { error } = await supabase
