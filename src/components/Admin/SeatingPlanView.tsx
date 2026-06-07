@@ -56,11 +56,17 @@ function DraggableSeat({ guest, index, isDragged }: { guest: Guest; index: numbe
             `}
         >
             {/* Floating Badges */}
-            <div className="absolute -top-3 flex gap-1 text-base z-20">
-                {guest.is_table_captain && <span title="Table Captain">👑</span>}
-                {guest.needs_baby_gift && <span title="Baby Gift">🍼</span>}
-                {guest.allergies && <span title={guest.allergies}>🥜</span>}
-                {getMenuEmoji(guest.menu_preference) && <span title={guest.menu_preference}>{getMenuEmoji(guest.menu_preference)}</span>}
+            <div className="absolute -top-6 flex flex-col items-center gap-0.5 z-20 pointer-events-none w-full">
+                {guest.allergies && (
+                    <span className="bg-red-100 text-red-700 text-[9px] px-1.5 py-0.5 rounded shadow-sm border border-red-200 font-bold whitespace-nowrap overflow-hidden text-ellipsis max-w-[80px]" title={guest.allergies}>
+                        {guest.allergies}
+                    </span>
+                )}
+                <div className="flex gap-1 text-base">
+                    {guest.is_table_captain && <span title="Table Captain">👑</span>}
+                    {guest.needs_baby_gift && <span title="Baby Gift">🍼</span>}
+                    {getMenuEmoji(guest.menu_preference) && <span title={guest.menu_preference}>{getMenuEmoji(guest.menu_preference)}</span>}
+                </div>
             </div>
 
 
@@ -243,7 +249,16 @@ export function SeatingPlanView() {
     const activeGuest = activeGuestId ? guests.find(g => g.id === activeGuestId) : null;
 
     return (
-        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-start h-[calc(100vh-10rem)]">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-start h-[calc(100vh-10rem)] print:h-auto print:block">
+            <style>{`
+                @media print {
+                    body, html, #root { height: auto !important; overflow: visible !important; background: white !important; }
+                    /* Override layout restrictions */
+                    div[class*="h-[calc"] { height: auto !important; overflow: visible !important; display: block !important; }
+                    main { height: auto !important; overflow: visible !important; padding: 0 !important; background: white !important; }
+                    nav, aside, header, .print-hidden { display: none !important; }
+                }
+            `}</style>
             {/* Sidebar - Guest Order List */}
             {selectedTable && (
                 <Card className="w-full lg:w-80 h-48 lg:h-full flex flex-col bg-slate-50 border-none shadow-md shrink-0 lg:sticky lg:top-4 z-10 overflow-hidden">
@@ -330,14 +345,19 @@ export function SeatingPlanView() {
                 ) : (
                     /* ─── Table Detail with dnd-kit ────────────────────────────── */
                     <>
-                        <div className="mb-8 flex items-start justify-between">
+                        <div className="mb-8 flex items-start justify-between print-hidden">
                             <div>
                                 <h2 className="text-2xl font-serif font-semibold">{selectedTable.name}</h2>
                                 <p className="text-muted-foreground text-sm">Drag guests around the table to swap seats.</p>
                             </div>
-                            <Button variant="outline" size="sm" onClick={() => setSelectedTableId(null)} className="shrink-0 ml-4">
-                                {t('seating.backToMap', '◀')}
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <Button variant="default" size="sm" onClick={() => window.print()}>
+                                    {t('common.print', 'Print PDF')}
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={() => setSelectedTableId(null)} className="shrink-0 ml-4">
+                                    {t('seating.backToMap', '◀')}
+                                </Button>
+                            </div>
                         </div>
 
                         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
