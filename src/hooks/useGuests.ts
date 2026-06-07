@@ -141,7 +141,12 @@ export function useGuests() {
                 return supabase.from('guests').update(payload).eq('id', id);
             });
             
-            await Promise.all(promises);
+            const results = await Promise.all(promises);
+            const errors = results.filter(r => r.error);
+            if (errors.length > 0) {
+                console.error("Errors in bulk update:", errors.map(e => e.error));
+                throw new Error(errors[0].error?.message || "Failed to bulk update");
+            }
 
             setGuests((prev) => {
                 const updateMap = new Map(updates.map(u => [u.id, u.updates]));
@@ -302,6 +307,7 @@ export function useGuests() {
         addGuest,
         addGuests,
         updateGuest,
+        updateGuestsBulk,
         deleteGuest,
         linkGuests,
         refreshGuests: fetchGuests,

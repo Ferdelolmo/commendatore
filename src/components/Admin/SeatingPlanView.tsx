@@ -57,17 +57,19 @@ export function SeatingPlanView() {
     }, [selectedTable, tableGuests]);
 
     const handleDragStart = (e: React.DragEvent, guestId: string) => {
-        e.dataTransfer.setData('guestId', guestId);
+        e.dataTransfer.setData('text/plain', guestId);
         setDraggedGuestId(guestId);
     };
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
+        e.stopPropagation();
     };
 
     const handleDrop = async (e: React.DragEvent, targetIndex: number) => {
         e.preventDefault();
-        const guestId = e.dataTransfer.getData('guestId');
+        e.stopPropagation();
+        const guestId = e.dataTransfer.getData('text/plain');
         if (!guestId || !selectedTable) return;
 
         const draggedGuest = tableGuests.find(g => g.id === guestId);
@@ -175,35 +177,48 @@ export function SeatingPlanView() {
 
     return (
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-start h-[calc(100vh-10rem)]">
-            {/* Sidebar - Tables List */}
-            <Card className="w-full lg:w-80 h-48 lg:h-full flex flex-col bg-slate-50 border-none shadow-md shrink-0 lg:sticky lg:top-4 z-10 overflow-hidden">
-                <CardHeader className="pb-3 bg-white rounded-t-lg border-b">
-                    <CardTitle className="text-lg">{t('seating.selectTableView', 'Select a Table')}</CardTitle>
-                    <CardDescription>{t('seating.selectTableViewDesc', 'Choose a table to arrange the seating plan.')}</CardDescription>
-                </CardHeader>
-                <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                    {tables.map(table => {
-                        const guestCount = guests.filter(g => g.table_id === table.id).length;
-                        return (
-                            <div 
-                                key={table.id}
-                                onClick={() => setSelectedTableId(table.id)}
-                                className={`p-3 rounded-lg border-2 cursor-pointer transition-all flex items-center justify-between ${selectedTableId === table.id ? 'border-primary bg-primary/5 shadow-sm' : 'border-transparent bg-white hover:border-slate-200 shadow-sm'}`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                                        <Armchair className="w-5 h-5" />
+            {/* Sidebar - Guest List */}
+            {selectedTable && (
+                <Card className="w-full lg:w-80 h-48 lg:h-full flex flex-col bg-slate-50 border-none shadow-md shrink-0 lg:sticky lg:top-4 z-10 overflow-hidden">
+                    <CardHeader className="pb-3 bg-white rounded-t-lg border-b">
+                        <CardTitle className="text-lg">{selectedTable.name} Guests</CardTitle>
+                        <CardDescription>Drag to reorder seats. Couples move together.</CardDescription>
+                    </CardHeader>
+                    <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                        {assignedSeats.map((guest, index) => {
+                            if (!guest) return null;
+                            const isDragged = draggedGuestId === guest.id;
+                            return (
+                                <div
+                                    key={guest.id}
+                                    draggable
+                                    onDragStart={(e: any) => handleDragStart(e, guest.id)}
+                                    onDragOver={handleDragOver}
+                                    onDrop={(e) => handleDrop(e, index)}
+                                    className={`bg-white border rounded-md p-3 shadow-sm cursor-grab active:cursor-grabbing flex items-center justify-between transition-all ${isDragged ? 'opacity-50 scale-95 border-primary border-dashed' : 'hover:border-slate-300'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-500">
+                                            {index + 1}
+                                        </div>
+                                        <div className="text-sm font-medium">{guest.name}</div>
                                     </div>
-                                    <div>
-                                        <div className="font-medium text-sm">{table.name}</div>
-                                        <div className="text-xs text-muted-foreground">{guestCount} / {table.capacity.max} {t('tables.guests')}</div>
+                                    <div className="flex items-center gap-1">
+                                        {guest.is_table_captain && <span title="Table Captain" className="text-xs">👑</span>}
+                                        {guest.needs_baby_gift && <span title="Baby Gift" className="text-xs">🍼</span>}
+                                        {guest.allergies && <span title={guest.allergies} className="text-xs">🥜</span>}
                                     </div>
                                 </div>
+                            );
+                        })}
+                        {assignedSeats.filter(g => g === null).length > 0 && (
+                            <div className="text-xs text-center text-muted-foreground mt-4 py-2 border-2 border-dashed border-slate-200 rounded-md">
+                                + {assignedSeats.filter(g => g === null).length} Empty Seats
                             </div>
-                        );
-                    })}
-                </div>
-            </Card>
+                        )}
+                    </div>
+                </Card>
+            )}
 
             {/* Main Area - Visual Seating Plan */}
             <div className="flex-1 w-full bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col min-h-[600px] overflow-hidden relative">
@@ -259,7 +274,7 @@ export function SeatingPlanView() {
                         <div className="mb-8 flex items-start justify-between">
                             <div>
                                 <h2 className="text-2xl font-serif font-semibold">{selectedTable.name}</h2>
-                                <p className="text-muted-foreground text-sm">{t('seating.dragToReorder', 'Drag and drop guests to reorder seats. Couples will move together. Click a guest to add details.')}</p>
+                                <p className="text-muted-foreground text-sm">Review the seating arrangement here. Use the sidebar to change the order.</p>
                             </div>
                             <Button variant="outline" size="sm" onClick={() => setSelectedTableId(null)} className="shrink-0 ml-4">
                                 {t('seating.backToMap', 'Back to Map')}
@@ -288,36 +303,38 @@ export function SeatingPlanView() {
                                         key={index}
                                         className="absolute z-10"
                                         style={style}
-                                        onDragOver={handleDragOver}
-                                        onDrop={(e) => handleDrop(e, index)}
                                     >
                                         {guest ? (
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <motion.div 
-                                                        layout
-                                                        draggable
-                                                        onDragStart={(e: any) => handleDragStart(e, guest.id)}
-                                                        className={`relative w-20 h-20 rounded-full bg-white border-2 flex flex-col items-center justify-center cursor-pointer shadow-md hover:shadow-lg transition-all
-                                                            ${isDragged ? 'opacity-50 scale-95 border-primary border-dashed' : 'border-slate-300 hover:border-primary'}
-                                                        `}
-                                                    >
-                                                        {/* Floating Badges */}
-                                                        <div className="absolute -top-3 flex gap-1 text-base z-20">
-                                                            {guest.is_table_captain && <span title="Table Captain">👑</span>}
-                                                            {guest.needs_baby_gift && <span title="Baby Gift">🍼</span>}
-                                                            {guest.allergies && <span title={guest.allergies}>🥜</span>}
-                                                        </div>
-                                                        
-                                                        {guest.side === 'Fernando' && <img src="https://i.imgur.com/bqNCQ7n.jpeg" alt="" className="absolute inset-0 w-full h-full object-cover rounded-full opacity-20" />}
-                                                        {guest.side === 'Chiara' && <img src="https://i.imgur.com/MtxJGhX.jpeg" alt="" className="absolute inset-0 w-full h-full object-cover rounded-full opacity-20" />}
-                                                        
-                                                        <span className="text-[11px] font-bold text-center px-2 leading-tight break-words z-10 w-full">{guest.name}</span>
-                                                    </motion.div>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-64 p-4">
-                                                    <div className="space-y-4">
-                                                        <div className="font-semibold pb-2 border-b">{guest.name}</div>
+                                            <>
+                                                <div 
+                                                    className={`relative w-20 h-20 rounded-full bg-white border-2 flex flex-col items-center justify-center shadow-md transition-all
+                                                        ${isDragged ? 'border-primary border-dashed scale-110 shadow-lg' : 'border-slate-300'}
+                                                    `}
+                                                >
+                                                    {/* Floating Badges */}
+                                                    <div className="absolute -top-3 flex gap-1 text-base z-20">
+                                                        {guest.is_table_captain && <span title="Table Captain">👑</span>}
+                                                        {guest.needs_baby_gift && <span title="Baby Gift">🍼</span>}
+                                                        {guest.allergies && <span title={guest.allergies}>🥜</span>}
+                                                    </div>
+                                                    
+                                                    {guest.side === 'Fernando' && <img src="https://i.imgur.com/bqNCQ7n.jpeg" alt="" className="absolute inset-0 w-full h-full object-cover rounded-full opacity-20 pointer-events-none" />}
+                                                    {guest.side === 'Chiara' && <img src="https://i.imgur.com/MtxJGhX.jpeg" alt="" className="absolute inset-0 w-full h-full object-cover rounded-full opacity-20 pointer-events-none" />}
+                                                    
+                                                    <span className="text-[11px] font-bold text-center px-2 leading-tight break-words z-10 w-full pointer-events-none">{guest.name}</span>
+
+                                                    <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <div 
+                                                                className="absolute -bottom-2 bg-white rounded-full p-1 border shadow-sm cursor-pointer hover:bg-slate-50 z-30"
+                                                                onPointerDown={(e) => e.stopPropagation()} // Prevent drag conflict when clicking edit
+                                                            >
+                                                                <Edit2 className="w-3 h-3 text-slate-500" />
+                                                            </div>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent className="w-64 p-4 z-50">
+                                                            <div className="space-y-4">
+                                                                <div className="font-semibold pb-2 border-b">{guest.name}</div>
                                                         <div className="flex items-center justify-between">
                                                             <Label htmlFor={`captain-${guest.id}`} className="flex items-center gap-2 cursor-pointer">
                                                                 👑 Capitan de mesa
@@ -349,7 +366,9 @@ export function SeatingPlanView() {
                                                         </div>
                                                     </div>
                                                 </PopoverContent>
-                                            </Popover>
+                                                </Popover>
+                                                </div>
+                                            </>
                                         ) : (
                                             <div className="w-12 h-12 rounded-full border-2 border-dashed border-slate-300 bg-slate-50/50 flex items-center justify-center">
                                                 <span className="text-xs text-slate-400 font-medium">{index + 1}</span>
