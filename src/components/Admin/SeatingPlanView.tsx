@@ -52,8 +52,6 @@ function DraggableSeat({ guest, index, isDragged }: { guest: Guest; index: numbe
                 {guest.allergies && <span title={guest.allergies}>🥜</span>}
             </div>
 
-            {guest.side === 'Fernando' && <img src="https://i.imgur.com/bqNCQ7n.jpeg" alt="" className="absolute inset-0 w-full h-full object-cover rounded-full opacity-20 pointer-events-none" />}
-            {guest.side === 'Chiara' && <img src="https://i.imgur.com/MtxJGhX.jpeg" alt="" className="absolute inset-0 w-full h-full object-cover rounded-full opacity-20 pointer-events-none" />}
 
             <span className="text-[11px] font-bold text-center px-2 leading-tight break-words z-10 w-full pointer-events-none">{guest.name}</span>
         </div>
