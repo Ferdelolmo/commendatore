@@ -23,6 +23,16 @@ import {
     type DragEndEvent,
 } from '@dnd-kit/core';
 
+const getMenuEmoji = (menuPreference?: string) => {
+    if (!menuPreference) return null;
+    const pref = menuPreference.toLowerCase();
+    if (pref.includes('meat') || pref.includes('carne')) return '🥩';
+    if (pref.includes('fish') || pref.includes('pescado') || pref.includes('pesce')) return '🐟';
+    if (pref.includes('vegetarian') || pref.includes('vegan') || pref.includes('vegetariano')) return '🥗';
+    if (pref.includes('children') || pref.includes('kid') || pref.includes('niño') || pref.includes('nino')) return '🧒';
+    return null;
+};
+
 // ─── Draggable Guest Seat ───────────────────────────────────────────────────
 function DraggableSeat({ guest, index, isDragged }: { guest: Guest; index: number; isDragged: boolean }) {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -50,6 +60,7 @@ function DraggableSeat({ guest, index, isDragged }: { guest: Guest; index: numbe
                 {guest.is_table_captain && <span title="Table Captain">👑</span>}
                 {guest.needs_baby_gift && <span title="Baby Gift">🍼</span>}
                 {guest.allergies && <span title={guest.allergies}>🥜</span>}
+                {getMenuEmoji(guest.menu_preference) && <span title={guest.menu_preference}>{getMenuEmoji(guest.menu_preference)}</span>}
             </div>
 
 
@@ -258,6 +269,7 @@ export function SeatingPlanView() {
                                         {guest.is_table_captain && <span title="Table Captain" className="text-xs">👑</span>}
                                         {guest.needs_baby_gift && <span title="Baby Gift" className="text-xs">🍼</span>}
                                         {guest.allergies && <span title={guest.allergies} className="text-xs">🥜</span>}
+                                        {getMenuEmoji(guest.menu_preference) && <span title={guest.menu_preference} className="text-xs">{getMenuEmoji(guest.menu_preference)}</span>}
                                     </div>
                                 </div>
                             );
