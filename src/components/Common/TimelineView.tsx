@@ -210,6 +210,7 @@ export function TimelineView({ tasks, onEdit, highlightedTaskId, onStatusChange,
         const now = new Date();
         const elements: JSX.Element[] = [];
         let lastDate: string | null = null;
+        let lastTaskDateObj: Date | null = null;
         let nowLineRendered = false;
 
         taskList.forEach((task) => {
@@ -242,6 +243,30 @@ export function TimelineView({ tasks, onEdit, highlightedTaskId, onStatusChange,
                     </div>
                 );
                 lastDate = task.date;
+                lastTaskDateObj = null;
+            }
+
+            if (lastTaskDateObj && task.date === lastDate) {
+                const diffMs = taskDate.getTime() - lastTaskDateObj.getTime();
+                if (diffMs > 0) {
+                    const diffMins = Math.floor(diffMs / 60000);
+                    const hours = Math.floor(diffMins / 60);
+                    const mins = diffMins % 60;
+                    let gapText = '';
+                    if (hours > 0) gapText += `${hours}h `;
+                    if (mins > 0) gapText += `${mins}m`;
+                    gapText = gapText.trim();
+
+                    if (gapText) {
+                        elements.push(
+                            <div key={`gap-${task.id}`} className="relative h-6 flex items-center pl-4 my-1 opacity-70">
+                                <div className="text-muted-foreground text-[10px] font-medium px-2 py-0.5 rounded-full border border-primary/20 bg-primary/5 shadow-sm whitespace-nowrap flex items-center gap-1">
+                                    ⏱️ {gapText}
+                                </div>
+                            </div>
+                        );
+                    }
+                }
             }
 
             elements.push(
@@ -249,6 +274,8 @@ export function TimelineView({ tasks, onEdit, highlightedTaskId, onStatusChange,
                     {renderTaskCard(task, isTaskExpired)}
                 </div>
             );
+
+            lastTaskDateObj = taskDate;
         });
 
         if (!nowLineRendered && taskList.length > 0) {
@@ -288,6 +315,7 @@ export function TimelineView({ tasks, onEdit, highlightedTaskId, onStatusChange,
 
         const elements: JSX.Element[] = [];
         let lastDate: string | null = null;
+        let lastGroupDateObj: Date | null = null;
         let nowLineRendered = false;
 
         groupedByTime.forEach((group) => {
@@ -318,6 +346,30 @@ export function TimelineView({ tasks, onEdit, highlightedTaskId, onStatusChange,
                     </div>
                 );
                 lastDate = group.date;
+                lastGroupDateObj = null;
+            }
+
+            if (lastGroupDateObj && group.date === lastDate) {
+                const diffMs = groupDateObj.getTime() - lastGroupDateObj.getTime();
+                if (diffMs > 0) {
+                    const diffMins = Math.floor(diffMs / 60000);
+                    const hours = Math.floor(diffMins / 60);
+                    const mins = diffMins % 60;
+                    let gapText = '';
+                    if (hours > 0) gapText += `${hours}h `;
+                    if (mins > 0) gapText += `${mins}m`;
+                    gapText = gapText.trim();
+
+                    if (gapText) {
+                        elements.push(
+                            <div key={`gap-${group.date}-${group.time}`} className="relative h-10 flex items-center justify-center -mt-5 mb-5 z-10">
+                                <div className="absolute left-6 md:left-1/2 -translate-x-1/2 bg-destructive/10 text-destructive text-xs md:text-sm font-bold px-3 py-1 rounded-full border-2 border-destructive/30 shadow-sm whitespace-nowrap flex items-center gap-1.5 md:ml-0 ml-12 uppercase tracking-wider">
+                                    ⏱️ {gapText}
+                                </div>
+                            </div>
+                        );
+                    }
+                }
             }
 
             elements.push(
@@ -351,6 +403,8 @@ export function TimelineView({ tasks, onEdit, highlightedTaskId, onStatusChange,
                     </div>
                 </div>
             );
+
+            lastGroupDateObj = groupDateObj;
         });
 
         if (!nowLineRendered && taskList.length > 0) {
