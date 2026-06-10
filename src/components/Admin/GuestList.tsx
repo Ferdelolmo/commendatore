@@ -132,8 +132,23 @@ export function GuestList() {
     if (isLoading) return <div>Loading...</div>;
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="space-y-6 print:block">
+            <style>{`
+                @media print {
+                    body, html, #root { height: auto !important; overflow: visible !important; background: white !important; }
+                    /* Override layout restrictions */
+                    div[class*="h-[calc"] { height: auto !important; overflow: visible !important; display: block !important; }
+                    main { height: auto !important; overflow: visible !important; padding: 0 !important; background: white !important; }
+                    nav, aside, header, .print-hidden { display: none !important; }
+                    .table-fixed { table-layout: auto !important; width: 100% !important; }
+                    .bg-card { background: white !important; border: none !important; box-shadow: none !important; }
+                    /* Show all rows when printing */
+                    .overflow-y-auto, div[style*="max-height"] { max-height: none !important; overflow: visible !important; height: auto !important; }
+                    /* Hide scrollable body wrapper borders for print */
+                    .rounded-b-md, .rounded-t-md { border: none !important; }
+                }
+            `}</style>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print-hidden">
                 <Card>
                     <CardHeader className="py-4">
                         <CardTitle className="text-sm font-medium text-muted-foreground">{t('guests.totalGuests')}</CardTitle>
@@ -160,7 +175,7 @@ export function GuestList() {
                 </Card>
             </div>
             {/* Menu Counts */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 print-hidden">
                 <Card>
                     <CardHeader className="py-4">
                         <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -195,7 +210,7 @@ export function GuestList() {
                 </Card>
             </div>
 
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 print-hidden">
                 <div className="relative w-full md:w-72">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -206,6 +221,9 @@ export function GuestList() {
                     />
                 </div>
                 <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={() => window.print()}>
+                        🖨️
+                    </Button>
                     <Button variant="outline" onClick={exportToCSV}>
                         <Download className="h-4 w-4 mr-2" />
                         {t('guests.exportCSV')}

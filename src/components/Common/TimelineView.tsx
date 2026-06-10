@@ -373,7 +373,23 @@ export function TimelineView({ tasks, onEdit, highlightedTaskId, onStatusChange,
     };
 
     return (
-        <div className={cn("space-y-8 md:ml-4", variant === 'default' ? "pl-4 border-l-2 border-primary/20 ml-2" : "ml-2")}>
+        <div className={cn("space-y-8 md:ml-4 print:block", variant === 'default' ? "pl-4 border-l-2 border-primary/20 ml-2 print:ml-0 print:pl-0 print:border-none" : "ml-2 print:ml-0")}>
+            <style>{`
+                @media print {
+                    body, html, #root { height: auto !important; overflow: visible !important; background: white !important; }
+                    /* Override layout restrictions */
+                    div[class*="h-[calc"] { height: auto !important; overflow: visible !important; display: block !important; }
+                    main { height: auto !important; overflow: visible !important; padding: 0 !important; background: white !important; }
+                    nav, aside, header, .print-hidden { display: none !important; }
+                    .bg-card { background: white !important; border: 1px solid #e2e8f0 !important; box-shadow: none !important; break-inside: avoid; }
+                }
+            `}</style>
+
+            <div className="flex justify-end mb-4 print-hidden -mt-2">
+                <Button variant="outline" size="sm" onClick={() => window.print()} title="Print Timeline">
+                    🖨️
+                </Button>
+            </div>
             {/* Back to the past Section */}
             {pastTasks.length > 0 && (
                 <Collapsible open={showPast} onOpenChange={setShowPast} className="relative">

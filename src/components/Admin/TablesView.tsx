@@ -61,6 +61,7 @@ function TableModal({ isOpen, onClose, onSave, initialData }: TableModalProps) {
     const [shape, setShape] = useState<'circle' | 'square' | 'rectangle'>('circle');
     const [minCapacity, setMinCapacity] = useState(2);
     const [maxCapacity, setMaxCapacity] = useState(10);
+    const [languageFlags, setLanguageFlags] = useState('');
 
     useEffect(() => {
         if (initialData) {
@@ -68,11 +69,13 @@ function TableModal({ isOpen, onClose, onSave, initialData }: TableModalProps) {
             setShape(initialData.shape);
             setMinCapacity(initialData.capacity.min);
             setMaxCapacity(initialData.capacity.max);
+            setLanguageFlags(initialData.language_flags || '');
         } else {
             setName('');
             setShape('circle');
             setMinCapacity(2);
             setMaxCapacity(10);
+            setLanguageFlags('');
         }
     }, [initialData, isOpen]);
 
@@ -84,7 +87,8 @@ function TableModal({ isOpen, onClose, onSave, initialData }: TableModalProps) {
             capacity: {
                 min: minCapacity,
                 max: maxCapacity
-            }
+            },
+            language_flags: languageFlags
         });
         onClose();
     };
@@ -141,6 +145,17 @@ function TableModal({ isOpen, onClose, onSave, initialData }: TableModalProps) {
                                 <span className="text-xs font-medium">{t('tables.rectangle')}</span>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="language_flags">Language Flags (Optional)</Label>
+                        <Input
+                            id="language_flags"
+                            value={languageFlags}
+                            onChange={(e) => setLanguageFlags(e.target.value)}
+                            placeholder="e.g. 🇪🇸 🇬🇧 🇮🇹"
+                        />
+                        <p className="text-xs text-muted-foreground">Add up to 3 flag emojis for the languages spoken.</p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

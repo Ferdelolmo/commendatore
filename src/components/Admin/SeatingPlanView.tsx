@@ -333,7 +333,8 @@ export function SeatingPlanView() {
                                         `}
                                         style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
                                     >
-                                        <div className="text-center p-1">
+                                        <div className="text-center p-1 w-full flex flex-col items-center justify-center">
+                                            {table.language_flags && <div className="text-sm tracking-widest leading-none mb-1">{table.language_flags}</div>}
                                             <div className="font-bold text-xs text-slate-700 truncate w-full">{table.name}</div>
                                             <div className="text-[10px] text-slate-500">{guests.filter(g => g.table_id === table.id).length}/{table.capacity.max}</div>
                                         </div>
@@ -352,7 +353,7 @@ export function SeatingPlanView() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button variant="default" size="sm" onClick={() => window.print()}>
-                                    {t('common.print', 'Print PDF')}
+                                    {t('common.print', '🖨️')}
                                 </Button>
                                 <Button variant="outline" size="sm" onClick={() => setSelectedTableId(null)} className="shrink-0 ml-4">
                                     {t('seating.backToMap', '◀')}
@@ -368,10 +369,36 @@ export function SeatingPlanView() {
                                         selectedTable.shape === 'square' ? 'w-64 h-64 rounded-2xl' :
                                             'w-96 h-48 rounded-xl'}
                                 `}>
-                                    <div className="text-center">
+                                    <div className="text-center flex flex-col items-center">
+                                        {selectedTable.language_flags && <div className="text-3xl mb-2 tracking-widest">{selectedTable.language_flags}</div>}
                                         <div className="text-3xl font-serif font-bold text-slate-300">{selectedTable.name}</div>
                                     </div>
                                 </div>
+
+                                {/* Couples Links Layer */}
+                                <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+                                    {assignedSeats.map((guest, index) => {
+                                        if (!guest || !guest.group_id) return null;
+                                        // Find partner (only look ahead to avoid drawing twice)
+                                        const partnerIndex = assignedSeats.findIndex((g, i) => i > index && g?.group_id === guest.group_id);
+                                        if (partnerIndex === -1) return null;
+
+                                        const pos1 = getSeatStyle(index, selectedTable.capacity.max, selectedTable.shape);
+                                        const pos2 = getSeatStyle(partnerIndex, selectedTable.capacity.max, selectedTable.shape);
+
+                                        // Extract numerical percentage
+                                        return (
+                                            <line
+                                                key={`link-${guest.group_id}`}
+                                                x1={pos1.left} y1={pos1.top}
+                                                x2={pos2.left} y2={pos2.top}
+                                                strokeWidth="24"
+                                                strokeLinecap="round"
+                                                className="stroke-primary opacity-20"
+                                            />
+                                        );
+                                    })}
+                                </svg>
 
                                 {/* The Seats */}
                                 {assignedSeats.map((guest, index) => {

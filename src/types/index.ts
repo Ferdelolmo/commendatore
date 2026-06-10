@@ -108,6 +108,7 @@ export interface Table {
   };
   position?: { x: number; y: number };
   guests?: Guest[];
+  language_flags?: string;
 }
 
 export interface Gift {
