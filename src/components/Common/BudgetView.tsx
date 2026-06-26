@@ -15,7 +15,10 @@ import {
     RefreshCw,
     Minus,
     Gift as GiftIcon,
-    TrendingDown
+    TrendingDown,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 import { useBudget } from '@/hooks/useBudget';
 import { useGuests } from '@/hooks/useGuests';
@@ -26,14 +29,10 @@ import { useTranslation } from 'react-i18next';
 export function BudgetView() {
     const { t } = useTranslation();
     const {
-        budgetItems,
         paymentItems,
         isLoading,
         isSyncing,
         refreshBudget,
-        addBudgetItem,
-        updateBudgetItem,
-        deleteBudgetItem,
         addPaymentItem,
         updatePaymentItem,
         deletePaymentItem
@@ -43,8 +42,52 @@ export function BudgetView() {
 
     const [isEditing, setIsEditing] = useState(false);
 
-    const totalBudget = budgetItems.reduce((acc, item) => acc + item.amount, 0);
-    const totalBudgetWithGuardrail = totalBudget * 1.1;
+    type SortKey = 'description' | 'amount' | 'method' | 'paid' | 'pending';
+    type SortDir = 'asc' | 'desc';
+    const [sortKey, setSortKey] = useState<SortKey | null>(null);
+    const [sortDir, setSortDir] = useState<SortDir>('asc');
+
+    const handleSort = (key: SortKey) => {
+        if (sortKey === key) {
+            setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortKey(key);
+            setSortDir('asc');
+        }
+    };
+
+    const SortIcon = ({ col }: { col: SortKey }) => {
+        if (sortKey !== col) return <ArrowUpDown className="inline ml-1 h-3 w-3 opacity-40" />;
+        return sortDir === 'asc'
+            ? <ArrowUp className="inline ml-1 h-3 w-3" />
+            : <ArrowDown className="inline ml-1 h-3 w-3" />;
+    };
+
+    const sortedPaymentItems = useMemo(() => {
+        if (!sortKey) return paymentItems;
+        return [...paymentItems].sort((a, b) => {
+            let aVal: string | number;
+            let bVal: string | number;
+            if (sortKey === 'description') {
+                aVal = a.description.toLowerCase();
+                bVal = b.description.toLowerCase();
+            } else if (sortKey === 'method') {
+                aVal = (a.method ?? '').toLowerCase();
+                bVal = (b.method ?? '').toLowerCase();
+            } else if (sortKey === 'pending') {
+                aVal = a.amount - a.paid;
+                bVal = b.amount - b.paid;
+            } else {
+                aVal = a[sortKey] as number;
+                bVal = b[sortKey] as number;
+            }
+            if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }, [paymentItems, sortKey, sortDir]);
+
+    const totalBudget = paymentItems.reduce((acc, item) => acc + item.amount, 0);
 
     const distribution = useMemo(() => {
         let chiaraCount = 0;
@@ -72,7 +115,7 @@ export function BudgetView() {
         const fernandoPct = fernandoCount / totalCount;
 
         // Net cost each person owes: (total projected - gifts received) * their share
-        const netCost = totalBudgetWithGuardrail - totalGifts;
+        const netCost = totalBudget - totalGifts;
 
         return {
             chiaraPct,
@@ -80,9 +123,9 @@ export function BudgetView() {
             chiaraOwes: netCost * chiaraPct,
             fernandoOwes: netCost * fernandoPct,
         };
-    }, [guests, totalBudgetWithGuardrail, totalGifts]);
+    }, [guests, totalBudget, totalGifts]);
 
-    if (isLoading && budgetItems.length === 0) {
+    if (isLoading && paymentItems.length === 0) {
         return <div className="p-8 text-center text-muted-foreground animate-pulse">{t('common.loading')}</div>;
     }
 
@@ -108,10 +151,10 @@ export function BudgetView() {
                     <CardContent>
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
-                                <div className="text-2xl font-bold">€{totalBudgetWithGuardrail.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                                <div className="text-2xl font-bold">€{totalBudget.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                 <p className="text-xs text-muted-foreground">{t('common.totalProjectedCost')}</p>
                             </div>
-                            {(totalBudgetWithGuardrail > 0) ? (
+                            {(totalBudget > 0) ? (
                                 <div className="flex flex-col items-end gap-1 mt-2 md:mt-0">
                                     <p className="text-[11px] text-muted-foreground text-right">
                                         Net cost after gifts ({Math.round(distribution.chiaraPct * 100)}% / {Math.round(distribution.fernandoPct * 100)}%)
@@ -149,7 +192,7 @@ export function BudgetView() {
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>{t('common.detailedBreakdown')}</CardTitle>
                             {isEditing && (
-                                <Button size="sm" variant="outline" onClick={() => addBudgetItem({ category: 'New Item', amount: 0 })}>
+                                <Button size="sm" variant="outline" onClick={() => addPaymentItem({ description: 'New Item', amount: 0, paid: 0, pending: 0, method: 'Transfer' })}>
                                     <Plus className="h-4 w-4 mr-2" /> {t('common.addItem')}
                                 </Button>
                             )}
@@ -164,22 +207,22 @@ export function BudgetView() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {budgetItems.length === 0 ? (
+                                    {paymentItems.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={isEditing ? 3 : 2} className="text-center py-8 text-muted-foreground">
                                                 {t('common.noItemsFound')}
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        budgetItems.map((item) => (
+                                        paymentItems.map((item) => (
                                             <TableRow key={item.id}>
                                                 <TableCell className="font-medium">
                                                     {isEditing ? (
                                                         <Input
-                                                            value={item.category}
-                                                            onChange={(e) => updateBudgetItem(item.id, { category: e.target.value })}
+                                                            value={item.description}
+                                                            onChange={(e) => updatePaymentItem(item.id, { description: e.target.value })}
                                                         />
-                                                    ) : item.category}
+                                                    ) : item.description}
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     {isEditing ? (
@@ -187,13 +230,13 @@ export function BudgetView() {
                                                             type="number"
                                                             className="text-right"
                                                             value={item.amount}
-                                                            onChange={(e) => updateBudgetItem(item.id, { amount: parseFloat(e.target.value) || 0 })}
+                                                            onChange={(e) => updatePaymentItem(item.id, { amount: parseFloat(e.target.value) || 0 })}
                                                         />
                                                     ) : `€${item.amount.toLocaleString()}`}
                                                 </TableCell>
                                                 {isEditing && (
                                                     <TableCell>
-                                                        <Button variant="ghost" size="icon" onClick={() => deleteBudgetItem(item.id)}>
+                                                        <Button variant="ghost" size="icon" onClick={() => deletePaymentItem(item.id)}>
                                                             <Trash2 className="h-4 w-4 text-destructive" />
                                                         </Button>
                                                     </TableCell>
@@ -221,38 +264,24 @@ export function BudgetView() {
                                         <div className="text-2xl font-bold">€{paymentItems.reduce((acc, item) => acc + item.paid, 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                         <p className="text-xs text-muted-foreground">{t('common.amountPaid')}</p>
                                     </div>
-                                    {(paymentItems.length > 0) ? (() => {
+                                    {(() => {
                                         const total = paymentItems.reduce((acc, item) => acc + item.paid, 0);
-                                        if (total === 0) return null;
+                                        if (total === 0 || paymentItems.length === 0) return null;
                                         const cashPaid = paymentItems.filter(item => item.method === 'Cash').reduce((acc, item) => acc + item.paid, 0);
                                         const transferPaid = paymentItems.filter(item => item.method === 'Transfer').reduce((acc, item) => acc + item.paid, 0);
                                         return (
-                                            <>
-                                                <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-muted-foreground">{t('common.cash')}</span>
-                                                        <span className="font-semibold text-green-600">€{cashPaid.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                                    </div>
-                                                    <div className="flex flex-col items-end">
-                                                        <span className="text-muted-foreground">{t('common.transfer')}</span>
-                                                        <span className="font-semibold text-blue-600">€{transferPaid.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                                    </div>
+                                            <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
+                                                <div className="flex flex-col">
+                                                    <span className="text-muted-foreground">{t('common.cash')}</span>
+                                                    <span className="font-semibold text-green-600">€{cashPaid.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                                                 </div>
-                                                {(distribution.chiaraPct > 0 || distribution.fernandoPct > 0) && (
-                                                    <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-muted-foreground">Chiara</span>
-                                                            <span className="font-semibold">€{(total * distribution.chiaraPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                                        </div>
-                                                        <div className="flex flex-col items-end">
-                                                            <span className="text-muted-foreground">Fernando</span>
-                                                            <span className="font-semibold">€{(total * distribution.fernandoPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </>
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-muted-foreground">{t('common.transfer')}</span>
+                                                    <span className="font-semibold text-blue-600">€{transferPaid.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                </div>
+                                            </div>
                                         );
-                                    })() : null}
+                                    })()}
                                 </div>
                             </CardContent>
                         </Card>
@@ -267,38 +296,24 @@ export function BudgetView() {
                                         <div className="text-2xl font-bold">€{paymentItems.reduce((acc, item) => acc + (item.amount - item.paid), 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                         <p className="text-xs text-muted-foreground">{t('common.amountRemaining')}</p>
                                     </div>
-                                    {(paymentItems.length > 0) ? (() => {
+                                    {(() => {
                                         const total = paymentItems.reduce((acc, item) => acc + (item.amount - item.paid), 0);
-                                        if (total === 0) return null;
+                                        if (total === 0 || paymentItems.length === 0) return null;
                                         const cashPending = paymentItems.filter(item => item.method === 'Cash').reduce((acc, item) => acc + (item.amount - item.paid), 0);
                                         const transferPending = paymentItems.filter(item => item.method === 'Transfer').reduce((acc, item) => acc + (item.amount - item.paid), 0);
                                         return (
-                                            <>
-                                                <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-muted-foreground">{t('common.cash')}</span>
-                                                        <span className="font-semibold text-orange-500">€{cashPending.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                                    </div>
-                                                    <div className="flex flex-col items-end">
-                                                        <span className="text-muted-foreground">{t('common.transfer')}</span>
-                                                        <span className="font-semibold text-orange-500">€{transferPending.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                                    </div>
+                                            <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
+                                                <div className="flex flex-col">
+                                                    <span className="text-muted-foreground">{t('common.cash')}</span>
+                                                    <span className="font-semibold text-orange-500">€{cashPending.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                                                 </div>
-                                                {(distribution.chiaraPct > 0 || distribution.fernandoPct > 0) && (
-                                                    <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-muted-foreground">Chiara</span>
-                                                            <span className="font-semibold">€{(total * distribution.chiaraPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                                        </div>
-                                                        <div className="flex flex-col items-end">
-                                                            <span className="text-muted-foreground">Fernando</span>
-                                                            <span className="font-semibold">€{(total * distribution.fernandoPct).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </>
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-muted-foreground">{t('common.transfer')}</span>
+                                                    <span className="font-semibold text-orange-500">€{transferPending.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                </div>
+                                            </div>
                                         );
-                                    })() : null}
+                                    })()}
                                 </div>
                             </CardContent>
                         </Card>
@@ -317,23 +332,43 @@ export function BudgetView() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-[140px]">{t('common.concept')}</TableHead>
-                                        <TableHead className="w-[120px]">{t('common.method')}</TableHead>
-                                        <TableHead className="text-right">{t('common.total')}</TableHead>
-                                        <TableHead className="text-right">{t('common.paid')}</TableHead>
-                                        <TableHead className="text-right">{t('common.pending')}</TableHead>
+                                        <TableHead className="w-[140px]">
+                                            <button onClick={() => handleSort('description')} className="flex items-center hover:text-foreground transition-colors">
+                                                {t('common.concept')}<SortIcon col="description" />
+                                            </button>
+                                        </TableHead>
+                                        <TableHead className="w-[120px]">
+                                            <button onClick={() => handleSort('method')} className="flex items-center hover:text-foreground transition-colors">
+                                                {t('common.method')}<SortIcon col="method" />
+                                            </button>
+                                        </TableHead>
+                                        <TableHead className="text-right">
+                                            <button onClick={() => handleSort('amount')} className="flex items-center ml-auto hover:text-foreground transition-colors">
+                                                {t('common.total')}<SortIcon col="amount" />
+                                            </button>
+                                        </TableHead>
+                                        <TableHead className="text-right">
+                                            <button onClick={() => handleSort('paid')} className="flex items-center ml-auto hover:text-foreground transition-colors">
+                                                {t('common.paid')}<SortIcon col="paid" />
+                                            </button>
+                                        </TableHead>
+                                        <TableHead className="text-right">
+                                            <button onClick={() => handleSort('pending')} className="flex items-center ml-auto hover:text-foreground transition-colors">
+                                                {t('common.pending')}<SortIcon col="pending" />
+                                            </button>
+                                        </TableHead>
                                         {isEditing && <TableHead className="w-[50px]"></TableHead>}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {paymentItems.length === 0 ? (
+                                    {sortedPaymentItems.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={isEditing ? 6 : 5} className="text-center py-8 text-muted-foreground">
                                                 {t('common.noPaymentsFound')}
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        paymentItems.map((item) => (
+                                        sortedPaymentItems.map((item) => (
                                             <TableRow key={item.id}>
                                                 <TableCell>
                                                     {isEditing ? (
