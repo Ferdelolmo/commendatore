@@ -163,7 +163,36 @@
         "guests": "Guest List",
         "suppliers": "Suppliers",
         "tables": "Tables",
-        "days": "Days"
+        "days": "Days",
+        "seating": "Seating Plan",
+        "gifts": "Gifts",
+        "bomboniere": "Bomboniere",
+        "photo": "Photo Groups"
+    },
+    "header": {
+        "eventStarted": "Event started {{count}} days ago"
+    },
+    "photoGroups": {
+        "title": "Photo Groups",
+        "subtitle": "Drag entities into groups to organize photo calls",
+        "totalGroups": "Groups",
+        "totalEntities": "Total Entities",
+        "assigned": "Assigned",
+        "unassigned": "Unassigned",
+        "unassignedPool": "Unassigned",
+        "newGroup": "New Group",
+        "noGroups": "No groups yet",
+        "createFirst": "Create your first photo group to get started",
+        "createGroup": "Create Photo Group",
+        "aliasLabel": "Group Alias",
+        "aliasPlaceholder": "e.g. Bride's Family",
+        "numberLabel": "Group Number (unique)",
+        "suggested": "Suggested",
+        "create": "Create",
+        "editGroup": "Edit Photo Group",
+        "save": "Save",
+        "deleteGroup": "Delete Group",
+        "confirmDelete": "Are you sure you want to delete this group?"
     },
     "guests": {
         "title": "Guest List",

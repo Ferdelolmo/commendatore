@@ -163,7 +163,36 @@
         "guests": "Lista de Invitados",
         "suppliers": "Proveedores",
         "tables": "Mesas",
-        "days": "Días"
+        "days": "Días",
+        "seating": "Plan de Asientos",
+        "gifts": "Regalos",
+        "bomboniere": "Bomboniere",
+        "photo": "Grupos de Fotos"
+    },
+    "header": {
+        "eventStarted": "El evento empezó hace {{count}} días"
+    },
+    "photoGroups": {
+        "title": "Grupos de Fotos",
+        "subtitle": "Arrastra entidades a grupos para organizar las llamadas de foto",
+        "totalGroups": "Grupos",
+        "totalEntities": "Total de Entidades",
+        "assigned": "Asignados",
+        "unassigned": "Sin asignar",
+        "unassignedPool": "Sin asignar",
+        "newGroup": "Nuevo Grupo",
+        "noGroups": "Aún no hay grupos",
+        "createFirst": "Crea tu primer grupo de fotos para comenzar",
+        "createGroup": "Crear Grupo de Fotos",
+        "aliasLabel": "Alias del Grupo",
+        "aliasPlaceholder": "ej. Familia de la Novia",
+        "numberLabel": "Número de Grupo (único)",
+        "suggested": "Sugerido",
+        "create": "Crear",
+        "editGroup": "Editar Grupo de Fotos",
+        "save": "Guardar",
+        "deleteGroup": "Eliminar Grupo",
+        "confirmDelete": "¿Estás seguro de que quieres eliminar este grupo?"
     },
     "guests": {
         "title": "Lista de Invitados",
